@@ -1,16 +1,16 @@
-#ifndef _TRANSLATOR_DATA_H_
-#define _TRANSLATOR_DATA_H_
+#ifndef _CPU_DATA_H_
+#define _CPU_DATA_H_
 
 
 typedef enum {
-    PUSH = 0,
+    HLT = 0,
+    PUSH,
     ADD,
     SUB,
     DIV,
     MUL,
     SQRT,
-    OUT,
-    HLT
+    OUT
 } Instruction;
 
 
@@ -20,4 +20,5 @@ typedef struct {
     size_t capacity;
 } Program;
 
-#endif // _TRANSLATOR_DATA_H_
+
+#endif // _CPU_DATA_H_

@@ -2,11 +2,11 @@
 #include <string.h>
 #include <assert.h>
 
-#include "translator.h"
-#include "translator_data.h"
+#include "asm.h"
+#include "asm_data.h"
 
 
-bool translator(char* buffer)
+bool assembler(char* buffer)
 {
     FILE* out = fopen("output", "w");
     if (out == NULL)

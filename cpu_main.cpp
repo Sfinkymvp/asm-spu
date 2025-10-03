@@ -3,15 +3,13 @@
 #include <math.h>
 
 
-#include "process_data.h"
-#include "processor_input.h"
+#include "cpu_data.h"
+#include "cpu_input.h"
 #include "../secure_stack/stack.h"
 
 
 int main()
 {
-    printf("x^2 - 9x + 8\n");
-
     Stack_t stack = {};
 
     if (stackCtor(&stack, 8) != SUCCESS)

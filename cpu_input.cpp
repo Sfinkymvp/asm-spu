@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "processor_input.h"
+#include "cpu_input.h"
 
 
 bool input(Program* program, const char* input_filename)

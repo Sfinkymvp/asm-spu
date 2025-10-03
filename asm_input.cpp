@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 
-#include "translator_input.h"
+#include "asm_input.h"
 
 
 size_t getFileSize(const char* input_filename)
