@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <assert.h>
 
 #include "asm_input.h"
+#include "asm_data.h"
 
 
 size_t getFileSize(const char* input_filename)
@@ -19,30 +21,70 @@ size_t getFileSize(const char* input_filename)
 }
 
 
-char* initializeBuffer(const char* input_filename)
+ErrorCode initializeBuffer(char** buffer, const char* input_filename)
 {
+    assert(buffer != NULL);
     assert(input_filename != NULL);
 
     FILE* in = fopen(input_filename, "r");
-    if (in == NULL) {
-        return NULL;
-    }
+    if (in == NULL)
+        return ERR_FILE_OPEN;
 
     size_t size = getFileSize(input_filename);
-    if (size == 0)
-        return NULL;
+    *buffer  = (char*)calloc(size, 1);
+    if (*buffer == NULL)
+        return ERR_OUT_OF_MEMORY;
 
-    char* buffer  = (char*)calloc(size, 1);
-    if (buffer == NULL)
-        return NULL;
-
-    fread(buffer, 1, size - 1, in);
-    buffer[size - 1] = '\0';
+    fread(*buffer, 1, size - 1, in);
+    (*buffer)[size - 1] = '\0';
 
     if (fclose(in) != 0) {
-        free(buffer);
-        buffer = NULL;
+        free(*buffer);
+        *buffer = NULL;
+        return ERR_FILE_CLOSE;
     }
 
-    return buffer;
+    return ERR_OK;
+}
+
+
+ErrorCode parseArguments(Arguments* args, size_t argc, const char** argv)
+{
+    assert(args != NULL);
+    assert(argv != NULL);
+
+    size_t index = 1;
+    for (; index < argc; index++) {
+        if (strcmp(argv[index], "-i") == 0)
+            parseInputFile(argc, argv, args, &index);
+        else if (strcmp(argv[index], "-o") == 0)
+            parseOutputFile(argc, argv, args, &index);
+        else {
+            return ERR_INVALID_CMD_ARGUMENT;
+        }
+    }
+
+    return ERR_OK;
+}
+
+
+void parseInputFile(size_t argc, const char** argv, Arguments* args, size_t* index)
+{
+    assert(argv != NULL);
+    assert(args != NULL);
+    assert(index != NULL);
+
+    if (*index < argc - 1)
+        args->input_file = argv[++(*index)];
+}
+
+
+void parseOutputFile(size_t argc, const char** argv, Arguments* args, size_t* index)
+{
+    assert(argv != NULL);
+    assert(args != NULL);
+    assert(index != NULL);
+
+    if (*index < argc - 1)
+        args->output_file = argv[++(*index)];
 }

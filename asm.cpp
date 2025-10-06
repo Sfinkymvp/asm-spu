@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
@@ -6,46 +7,124 @@
 #include "asm_data.h"
 
 
-bool assembler(char* buffer)
+const char* error_messages[] = {
+    "This message should not be printed",
+    "Failed to open file",
+    "Failed to read data from file",
+    "Failed to write data to file",
+    "Failed to close file",
+    "Unknown command line argument",
+    "Unknown processor instruction",
+    "Failed to allocate memory"};
+
+
+ErrorCode assembler(ByteCode* code, char* buffer)
 {
-    FILE* out = fopen("output", "w");
-    if (out == NULL)
-        return false;
+    assert(code != NULL);
+    assert(buffer != NULL);
 
-    char instruction[5] = "";
+    initializeByteCode(code, START_CAPACITY);
+
+    char instruction[MAX_INSTRUCTION_LEN + 1] = "";
     char* token = strtok(buffer, "\n");
-    int value;
+    size_t index = 0;
+    ErrorCode error_code = ERR_OK;
 
-    while (token != NULL) {
-        if (sscanf(token, "%4s", instruction) <= 0)
-            return false;
+    while (token != NULL && error_code == ERR_OK) {
+        if (index >= code->capacity - 1)
+            error_code = expandByteCode(code);
 
-        if (strcmp(instruction, "PUSH") == 0) {
-            if (sscanf(token, "%*s %d", &value) == 1)
-                fprintf(out, "%d %d\n", (int)PUSH, value);
-            else
-                return false;
-        } else if (strcmp(instruction, "ADD") == 0) {
-            fprintf(out, "%d\n", (int)ADD);
-        } else if (strcmp(instruction, "SUB") == 0) {
-            fprintf(out, "%d\n", (int)SUB);
-        } else if (strcmp(instruction, "DIV") == 0) {
-            fprintf(out, "%d\n", (int)DIV);
-        } else if (strcmp(instruction, "MUL") == 0) {
-            fprintf(out, "%d\n", (int)MUL);
-        } else if (strcmp(instruction, "SQRT") == 0) {
-            fprintf(out, "%d\n", (int)SQRT);
-        } else if (strcmp(instruction, "OUT") == 0) {
-            fprintf(out, "%d\n", (int)OUT);
-        } else if (strcmp(instruction, "HLT") == 0) {
-            fprintf(out, "%d", (int)HLT);
-        } else
-            return false;
+        if (error_code != ERR_OK)
+            break;
+        error_code = assembleInstruction(code, token, instruction, &index);
 
         token = strtok(NULL, "\n");
     }
 
-    fclose(out);
+    if (error_code != ERR_OK) {
+        free(code->data);
+        code->data = NULL;
+        return error_code;
+    }
 
-    return true;
+    return ERR_OK;
+}
+
+
+ErrorCode assembleInstruction(ByteCode* code, char* substring, char* instruction, size_t* index)
+{
+    assert(code != NULL);
+    assert(substring != NULL);
+    assert(instruction != NULL);
+    assert(index != NULL);
+
+    if (sscanf(substring, "%4s", instruction) != 1) {
+        return ERR_INVALID_INSTRUCTION;
+    }
+
+    int value = 0;
+    if (strcmp(instruction, "PUSH") == 0) {
+        if (sscanf(substring, "%*s %d", &value) == 1) {
+            code->data[*index] = (int)PUSH;
+            code->data[++*index] = value;
+            code->instruction_count++;
+        } else
+            return ERR_INVALID_INSTRUCTION;
+    } else if (strcmp(instruction, "HLT") == 0) {
+        code->data[*index] = (int)HLT;
+    } else if (strcmp(instruction, "ADD") == 0) {
+        code->data[*index] = (int)ADD;
+    } else if (strcmp(instruction, "SUB") == 0) {
+        code->data[*index] = (int)SUB;
+    } else if (strcmp(instruction, "DIV") == 0) {
+        code->data[*index] = (int)DIV;
+    } else if (strcmp(instruction, "MUL") == 0) {
+        code->data[*index] = (int)MUL;
+    } else if (strcmp(instruction, "SQRT") == 0) {
+        code->data[*index] = (int)SQRT;
+    } else if (strcmp(instruction, "OUT") == 0) {
+        code->data[*index] = (int)OUT;
+    } else {
+        return ERR_INVALID_INSTRUCTION;
+    }
+
+    (*index)++;
+    code->instruction_count++;
+    return ERR_OK;
+}
+
+
+ErrorCode initializeByteCode(ByteCode* code, size_t start_capacity)
+{
+    assert(code != NULL);
+
+    code->data = (int*)calloc(start_capacity, sizeof(int));
+    if (code->data == NULL)
+        return ERR_OUT_OF_MEMORY;
+
+    code->capacity = start_capacity;
+    return ERR_OK;
+}
+
+
+ErrorCode expandByteCode(ByteCode* code)
+{
+    assert(code != NULL);
+
+    void* temp = realloc(code->data, code->capacity * 2 * sizeof(int));
+    if (temp == NULL)
+        return ERR_OUT_OF_MEMORY;
+
+    code->data = (int*)temp;
+    code->capacity *= 2;
+    return ERR_OK;
+}
+
+
+void destroyData(AssemblyData* data)
+{
+    assert(data != NULL);
+   
+    free(data->buffer);
+    free(data->code.data);
 }

@@ -2,18 +2,6 @@
 #define _CPU_DATA_H_
 
 
-typedef enum {
-    HLT = 0,
-    PUSH,
-    ADD,
-    SUB,
-    DIV,
-    MUL,
-    SQRT,
-    OUT
-} Instruction;
-
-
 typedef struct {
     int* data;
     size_t size;
