@@ -65,25 +65,25 @@ ErrorCode assembleInstruction(ByteCode* code, char* substring, char* instruction
     int value = 0;
     if (strcmp(instruction, "PUSH") == 0) {
         if (sscanf(substring, "%*s %d", &value) == 1) {
-            code->data[*index] = (int)PUSH;
+            code->data[*index] = (int)CMD_PUSH;
             code->data[++*index] = value;
             code->instruction_count++;
         } else
             return ERR_INVALID_INSTRUCTION;
     } else if (strcmp(instruction, "HLT") == 0) {
-        code->data[*index] = (int)HLT;
+        code->data[*index] = (int)CMD_HLT;
     } else if (strcmp(instruction, "ADD") == 0) {
-        code->data[*index] = (int)ADD;
+        code->data[*index] = (int)CMD_ADD;
     } else if (strcmp(instruction, "SUB") == 0) {
-        code->data[*index] = (int)SUB;
+        code->data[*index] = (int)CMD_SUB;
     } else if (strcmp(instruction, "DIV") == 0) {
-        code->data[*index] = (int)DIV;
+        code->data[*index] = (int)CMD_DIV;
     } else if (strcmp(instruction, "MUL") == 0) {
-        code->data[*index] = (int)MUL;
+        code->data[*index] = (int)CMD_MUL;
     } else if (strcmp(instruction, "SQRT") == 0) {
-        code->data[*index] = (int)SQRT;
+        code->data[*index] = (int)CMD_SQRT;
     } else if (strcmp(instruction, "OUT") == 0) {
-        code->data[*index] = (int)OUT;
+        code->data[*index] = (int)CMD_OUT;
     } else {
         return ERR_INVALID_INSTRUCTION;
     }

@@ -3,17 +3,17 @@
 
 
 typedef enum {
-    HLT = 0,
-    PUSH = 1,
-    ADD = 2,
-    SUB = 3,
-    DIV = 4,
-    MUL = 5,
-    SQRT = 6,
-    PUSHR = 7,
-    POPR = 8,
-    IN = 9,
-    OUT = 10
+    CMD_HLT = 0,
+    CMD_PUSH = 1,
+    CMD_ADD = 2,
+    CMD_SUB = 3,
+    CMD_DIV = 4,
+    CMD_MUL = 5,
+    CMD_SQRT = 6,
+    CMD_PUSHR = 7,
+    CMD_POPR = 8,
+    CMD_IN = 9,
+    CMD_OUT = 10
 } Instruction;
 
 

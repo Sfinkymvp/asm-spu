@@ -1,4 +1,4 @@
-FLAGS = -ggdb3 -std=c++17 -O0 \
+FLAGS="-ggdb3 -std=c++17 -O0 \
 	-Wall -Wextra -Weffc++ -Waggressive-loop-optimizations -Wc++14-compat \
 	-Wmissing-declarations -Wcast-align -Wcast-qual -Wchar-subscripts \
 	-Wconditionally-supported -Wconversion -Wctor-dtor-privacy \
@@ -15,15 +15,9 @@ FLAGS = -ggdb3 -std=c++17 -O0 \
     -fcheck-new -fsized-deallocation -fstack-protector \
 	-fstrict-overflow -flto-odr-type-merging -fno-omit-frame-pointer \
 	-Wlarger-than=16384 -Wstack-usage=8192 -pie -fPIE -Werror=vla \
-	-fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
+	-fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr"
 
+FILES="cpu_main.cpp cpu.cpp cpu_input.cpp ../secure_stack/stack.cpp ../secure_stack/stack_error.cpp"
 
-FILES = $(OBJDIR)/main.o $(OBJDIR)/stack.o $(OBJDIR)/stack_error.o
+g++ $FILES $FLAGS -o cpu
 
-
-OUTPUT_NAME = stack
-
-
-OBJDIR = obj
-$(OBJDIR):
-	@mkdir -p $(OBJDIR)

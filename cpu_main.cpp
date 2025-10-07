@@ -1,74 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <assert.h>
 
 
 #include "cpu_data.h"
+#include "cpu.h"
 #include "cpu_input.h"
 #include "../secure_stack/stack.h"
 
 
-int main()
+int main(int argc, const char** argv)
 {
-    Stack_t stack = {};
+    Processor cpu = {};
 
-    if (stackCtor(&stack, 8) != SUCCESS)
-        return 1;
+    stackCtor(&cpu.stack, START_STACK_CAPACITY);
 
-    Program program = {};
+    parseArguments(&cpu.args, (size_t)argc, argv);
+    assert(cpu.args.input_file != NULL);
 
-    input(&program, "output");     
+    loadByteCode(&cpu.code, cpu.args.input_file);
 
-    for (size_t index = 0; index < program.size; index++) {
-        bool break_flag = false;
-        int temp1 = 0, temp2 = 0;
-        switch ((Instruction)program.data[index]) {
-            case PUSH: 
-                       stackPush(&stack, program.data[++index]);
-                       break;
-            case ADD:  
-                       stackPop(&stack, &temp1);
-                       stackPop(&stack, &temp2);
-                       stackPush(&stack, temp2 + temp1);
-                       break;
-            case SUB: 
-                       stackPop(&stack, &temp1);
-                       stackPop(&stack, &temp2);
-                       stackPush(&stack, temp2 - temp1);
-                       break;
-            case DIV:
-                       stackPop(&stack, &temp1);
-                       stackPop(&stack, &temp2);
-                       stackPush(&stack, temp2 / temp1);
-                       break;
-            case MUL: 
-                       stackPop(&stack, &temp1);
-                       stackPop(&stack, &temp2);
-                       stackPush(&stack, temp2 * temp1);
-                       break;
-            case SQRT:
-                       stackPop(&stack, &temp1);
-                       stackPush(&stack, (int)sqrt(temp1));
-                       break;
-            case OUT:
-                       stackPop(&stack, &temp1);
-                       printf("%d\n", temp1);
-                       break;
-            case HLT:
-                       break_flag = true;
-                       break;
-            default:
-                       printf("Error instruction\n");
-                       break_flag = true;
-                       break;
-        }
+    executeProcessor(&cpu); 
 
-        if (break_flag)
-            break;
-    }
-
-    free(program.data);
-    stackDtor(&stack);
+    stackDtor(&cpu.stack);
+    free(cpu.code.buffer);
 
     return 0;
 }
