@@ -1,6 +1,5 @@
 a.out
 cpu
 asm
-test*
-output
-test*
+test[0-9]*
+out[0-9]*

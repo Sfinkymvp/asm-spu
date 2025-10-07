@@ -5,9 +5,6 @@
 #include "instructions.h"
 
 
-const size_t MAX_INSTRUCTION_LEN = 4;
-
-
 const size_t START_CAPACITY = 16;
 
 
@@ -32,6 +29,7 @@ typedef enum {
     ERR_FILE_CLOSE,
     ERR_INVALID_CMD_ARGUMENT,
     ERR_INVALID_INSTRUCTION,
+    ERR_INVALID_REGISTER,
     ERR_OUT_OF_MEMORY
 } ErrorCode;
 

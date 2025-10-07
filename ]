@@ -15,7 +15,6 @@ const char* error_messages[] = {
     "Failed to close file",
     "Unknown command line argument",
     "Unknown processor instruction",
-    "Unknown register name",
     "Failed to allocate memory"};
 
 
@@ -48,7 +47,6 @@ ErrorCode assembler(ByteCode* code, char* buffer)
         return error_code;
     }
 
-    code->instruction_count = index;
     return ERR_OK;
 }
 
@@ -60,7 +58,7 @@ ErrorCode assembleInstruction(ByteCode* code, char* substring, char* instruction
     assert(instruction != NULL);
     assert(index != NULL);
 
-    if (sscanf(substring, "%5s", instruction) != 1) {
+    if (sscanf(substring, "%4s", instruction) != 1) {
         return ERR_INVALID_INSTRUCTION;
     }
 
@@ -68,8 +66,10 @@ ErrorCode assembleInstruction(ByteCode* code, char* substring, char* instruction
 
     if (strcmp(instruction, "HLT") == 0) {
         code->data[*index] = (int)CMD_HLT;
-    } else if (strcmp(instruction, "PUSH") == 0) {
+    else if (strcmp(instruction, "PUSH") == 0) {
         err = asmPushValue(code, substring, index);
+        if (err != ERR_OK)
+            return err;
     } else if (strcmp(instruction, "ADD") == 0) {
         code->data[*index] = (int)CMD_ADD;
     } else if (strcmp(instruction, "SUB") == 0) {
@@ -82,101 +82,40 @@ ErrorCode assembleInstruction(ByteCode* code, char* substring, char* instruction
         code->data[*index] = (int)CMD_SQRT;
     } else if (strcmp(instruction, "PUSHR") == 0) {
         err = asmPushRegister(code, substring, index);
+        if (err != ERR_OK)
+            return err;
     } else if (strcmp(instruction, "POPR") == 0) {
-        err = asmPopRegister(code, substring, index);
+        err = asmPopRegister(code, substring, index)
+        if (err != ERR_OK)
+            return err;
     } else if (strcmp(instruction, "IN") == 0) {
-        code->data[*index] = (int)CMD_IN;
+        err = asmInValue(code, substring, index);
+
     } else if (strcmp(instruction, "OUT") == 0) {
         code->data[*index] = (int)CMD_OUT;
     } else {
         return ERR_INVALID_INSTRUCTION;
     }
 
-    if (err != ERR_OK) {
-        printf("OKAK\n");
-        return err;
-    }
-
     (*index)++;
+    code->instruction_count++;
     return ERR_OK;
 }
 
 
-ErrorCode asmPushValue(ByteCode* code, const char* substring, size_t* index)
+ErrorCode asmPushValue(ByteCode* code, const char* substring, int* value, size_t* index)
 {
     assert(code != NULL);
+    assert(code != NULL);
+    assert(value != NULL);
     assert(index != NULL);
 
-    int value = 0;
-    if (sscanf(substring, "%*s %d", &value) != 1) {
+    if (sscanf(substring, "%*s %d", &value) != 1)
         return ERR_INVALID_INSTRUCTION;
-    }
 
     code->data[*index] = (int)CMD_PUSH;
-    code->data[++(*index)] = value;
-    return ERR_OK;
-}
-
-
-ErrorCode getRegister(Register* reg, const char* substring)
-{
-    assert(reg != NULL);
-    assert(substring != NULL);
-
-    char reg_name[MAX_REGISTER_LEN + 1] = "";
-    if (sscanf(substring, "%*s %s", reg_name) != 1)
-        return ERR_INVALID_REGISTER;
-    if (strcmp(reg_name, "RESERVED") == 0)
-        *reg = RESERVED;
-    else if (strcmp(reg_name, "RAX") == 0)
-        *reg = RAX;
-    else if (strcmp(reg_name, "RBX") == 0)
-        *reg = RBX;
-    else if (strcmp(reg_name, "RCX") == 0)
-        *reg = RCX;
-    else if (strcmp(reg_name, "RDX") == 0)
-        *reg = RDX;
-    else if (strcmp(reg_name, "REX") == 0)
-        *reg = REX;
-    else if (strcmp(reg_name, "RFX") == 0)
-        *reg = RFX;
-    else if (strcmp(reg_name, "RGX") == 0)
-        *reg = RGX;
-    else
-        return ERR_INVALID_REGISTER;
-
-    return ERR_OK;
-}
-
-
-ErrorCode asmPushRegister(ByteCode* code, const char* substring, size_t* index)
-{
-    assert(code != NULL);
-    assert(index != NULL);
-
-    Register reg = RESERVED;
-    ErrorCode err = getRegister(&reg, substring);
-    if (err != ERR_OK)
-        return err;
-
-    code->data[*index] = (int)CMD_PUSHR;
-    code->data[++(*index)] = (int)reg;
-    return ERR_OK;
-}
-
-
-ErrorCode asmPopRegister(ByteCode* code, const char* substring, size_t* index)
-{
-    assert(code != NULL);
-    assert(index != NULL);
-
-    Register reg = RESERVED;
-    ErrorCode err = getRegister(&reg, substring);
-    if (err != ERR_OK)
-        return err;
-
-    code->data[*index] = (int)CMD_POPR;
-    code->data[++(*index)] = (int)reg;
+    code->data[++*index] = value;
+    code->instruction_count++;
     return ERR_OK;
 }
 

@@ -29,18 +29,6 @@ typedef enum {
 } ErrorCode;
 
 
-typedef enum {
-    RESERVED = 0,
-    RAX,
-    RBX,
-    RCX,
-    RDX,
-    REX,
-    RFX,
-    RGX
-} Register;
-
-
 const size_t REGISTER_COUNT = RGX + 1;
 
 

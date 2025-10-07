@@ -17,4 +17,21 @@ typedef enum {
 } Instruction;
 
 
+const size_t MAX_INSTRUCTION_LEN = 5;
+
+typedef enum {
+    RESERVED = 0,
+    RAX,
+    RBX,
+    RCX,
+    RDX,
+    REX,
+    RFX,
+    RGX
+} Register;
+
+
+const size_t MAX_REGISTER_LEN = 8;
+
+
 #endif // _INSTRUCTIONS_H_
