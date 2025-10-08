@@ -27,5 +27,11 @@ StackError cpuMul(Processor*cpu, size_t* index);
 
 
 StackError cpuSqrt(Processor*cpu, size_t* index);
+
+
+StackError cpuJump(Processor* cpu, size_t* index);
+
+
+bool comparator(int value1, int value2, Instruction instruction)
 #endif // _CPU_H_
 

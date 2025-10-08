@@ -21,8 +21,8 @@ int main(int argc, const char** argv)
 
     loadByteCode(&cpu.code, cpu.args.input_file);
 
-    executeProcessor(&cpu); 
-
+    printf("%d\n", (int)executeProcessor(&cpu));
+    
     stackDtor(&cpu.stack);
     free(cpu.code.buffer);
 

@@ -11,12 +11,12 @@ const size_t START_CAPACITY = 16;
 extern const char* error_messages[];
 
 
-#define REPORT_AND_RETURN(error_code, data_ptr) \
+#define REPORT_AND_RETURN(err, data_ptr) \
     do {                                        \
-        if ((error_code) != ERR_OK) {           \
-            printError(error_code);             \
+        if ((err) != ERR_OK) {           \
+            printError(err);             \
             destroyData(data_ptr);              \
-            return (error_code);                \
+            return (err);                \
         }                                       \
     } while (0)                                 
 

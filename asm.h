@@ -23,6 +23,9 @@ ErrorCode asmPushRegister(ByteCode* code, const char* substring, size_t* index);
 ErrorCode asmPopRegister(ByteCode* code, const char* substring, size_t* index);
 
 
+ErrorCode asmJump(ByteCode* code, const char* substring, const char* instruction, size_t* index);
+
+
 ErrorCode initializeByteCode(ByteCode* code, size_t start_capacity);
 
 

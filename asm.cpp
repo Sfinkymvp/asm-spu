@@ -65,7 +65,6 @@ ErrorCode assembleInstruction(ByteCode* code, char* substring, char* instruction
     }
 
     ErrorCode err = ERR_OK;
-
     if (strcmp(instruction, "HLT") == 0) {
         code->data[*index] = (int)CMD_HLT;
     } else if (strcmp(instruction, "PUSH") == 0) {
@@ -88,12 +87,11 @@ ErrorCode assembleInstruction(ByteCode* code, char* substring, char* instruction
         code->data[*index] = (int)CMD_IN;
     } else if (strcmp(instruction, "OUT") == 0) {
         code->data[*index] = (int)CMD_OUT;
-    } else {
+    } else if (asmJump(code, substring, instruction, index) != ERR_OK) {
         return ERR_INVALID_INSTRUCTION;
     }
 
     if (err != ERR_OK) {
-        printf("OKAK\n");
         return err;
     }
 
@@ -108,9 +106,8 @@ ErrorCode asmPushValue(ByteCode* code, const char* substring, size_t* index)
     assert(index != NULL);
 
     int value = 0;
-    if (sscanf(substring, "%*s %d", &value) != 1) {
+    if (sscanf(substring, "%*s %d", &value) != 1)
         return ERR_INVALID_INSTRUCTION;
-    }
 
     code->data[*index] = (int)CMD_PUSH;
     code->data[++(*index)] = value;
@@ -126,6 +123,7 @@ ErrorCode getRegister(Register* reg, const char* substring)
     char reg_name[MAX_REGISTER_LEN + 1] = "";
     if (sscanf(substring, "%*s %s", reg_name) != 1)
         return ERR_INVALID_REGISTER;
+
     if (strcmp(reg_name, "RESERVED") == 0)
         *reg = RESERVED;
     else if (strcmp(reg_name, "RAX") == 0)
@@ -152,6 +150,7 @@ ErrorCode getRegister(Register* reg, const char* substring)
 ErrorCode asmPushRegister(ByteCode* code, const char* substring, size_t* index)
 {
     assert(code != NULL);
+    assert(substring != NULL);
     assert(index != NULL);
 
     Register reg = RESERVED;
@@ -168,6 +167,7 @@ ErrorCode asmPushRegister(ByteCode* code, const char* substring, size_t* index)
 ErrorCode asmPopRegister(ByteCode* code, const char* substring, size_t* index)
 {
     assert(code != NULL);
+    assert(substring != NULL);
     assert(index != NULL);
 
     Register reg = RESERVED;
@@ -177,6 +177,39 @@ ErrorCode asmPopRegister(ByteCode* code, const char* substring, size_t* index)
 
     code->data[*index] = (int)CMD_POPR;
     code->data[++(*index)] = (int)reg;
+    return ERR_OK;
+}
+
+
+ErrorCode asmJump(ByteCode* code, const char* substring, const char* instruction, size_t* index)
+{   
+    assert(code != NULL);
+    assert(substring != NULL);
+    assert(instruction != NULL);
+    assert(index != NULL);
+
+    if (strcmp(instruction, "JMP") == 0)
+        code->data[*index] = (int)CMD_JMP;
+    else if (strcmp(instruction, "JB") == 0)
+        code->data[*index] = (int)CMD_JB;
+    else if (strcmp(instruction, "JBE") == 0)
+        code->data[*index] = (int)CMD_JBE;
+    else if (strcmp(instruction, "JA") == 0)
+        code->data[*index] = (int)CMD_JA;
+    else if (strcmp(instruction, "JAE") == 0)
+        code->data[*index] = (int)CMD_JAE;
+    else if (strcmp(instruction, "JE") == 0)
+        code->data[*index] = (int)CMD_JE;
+    else if (strcmp(instruction, "JNE") == 0)
+        code->data[*index] = (int)CMD_JNE;
+    else
+        return ERR_INVALID_INSTRUCTION;
+
+    int value = 0;
+    if (sscanf(substring, "%*s %d", &value) != 1)
+        return ERR_INVALID_INSTRUCTION;
+    code->data[++(*index)] = value;
+
     return ERR_OK;
 }
 

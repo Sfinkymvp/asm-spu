@@ -9,22 +9,22 @@
 int main(int argc, const char** argv)
 {
     AssemblyData data = {};
-    ErrorCode error_code = ERR_OK;
+    ErrorCode err = ERR_OK;
 
-    error_code = parseArguments(&data.args, (size_t)argc, argv);
-    REPORT_AND_RETURN(error_code, &data);
+    err = parseArguments(&data.args, (size_t)argc, argv);
+    REPORT_AND_RETURN(err, &data);
 
     printf("MEOW1\n");
-    error_code = initializeBuffer(&data.buffer, data.args.input_file);
-    REPORT_AND_RETURN(error_code, &data);
+    err = initializeBuffer(&data.buffer, data.args.input_file);
+    REPORT_AND_RETURN(err, &data);
 
     printf("MEOW2\n");
-    error_code = assembler(&data.code, data.buffer);
-    REPORT_AND_RETURN(error_code, &data);
+    err = assembler(&data.code, data.buffer);
+    REPORT_AND_RETURN(err, &data);
 
     printf("MEOW3\n");
-    error_code = writeByteCodeToFile(&data.code, data.args.output_file);
-    REPORT_AND_RETURN(error_code, &data);
+    err = writeByteCodeToFile(&data.code, data.args.output_file);
+    REPORT_AND_RETURN(err, &data);
   
     printf("MEOWFINAL\n");
     printf("%zu\n", data.code.instruction_count);
