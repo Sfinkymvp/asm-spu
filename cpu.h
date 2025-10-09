@@ -48,8 +48,5 @@ ErrorCode cpuOut(Processor* cpu, size_t* index);
 ErrorCode cpuIn(Processor* cpu, size_t* index);
 
 
-ErrorCode cpuHlt(size_t* index);
-
-
 #endif // _CPU_H_
 

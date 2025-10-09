@@ -27,6 +27,7 @@ typedef enum {
     ERR_INVALID_INPUT,
     ERR_INVALID_OUTPUT,
     ERR_OUT_OF_MEMORY,
+    ERR_EXIT
 } ErrorCode;
 
 

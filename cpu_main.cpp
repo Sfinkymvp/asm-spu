@@ -23,7 +23,7 @@ int main(int argc, const char** argv)
     loadByteCode(&cpu.code, cpu.args.input_file);
     printf("after load code\n");
 
-    printf("%d\n", (int)executeProcessor(&cpu));
+    printf("Processor exit code: %d\n", (int)executeProcessor(&cpu));
     printf("after execute\n");    
 
     stackDtor(&cpu.stack);

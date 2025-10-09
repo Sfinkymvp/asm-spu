@@ -16,9 +16,10 @@ ErrorCode executeProcessor(Processor* cpu)
     for (size_t index = 0; index < cpu->code.instruction_count;) {
         ErrorCode err = ERR_OK;
         err = executeInstruction(cpu, &index);
-        if (err != ERR_OK) {
+        if (err == ERR_EXIT)
+            return ERR_OK;
+        if (err != ERR_OK)
             return err;
-        }
     }
 
     return ERR_OK;
@@ -50,7 +51,7 @@ ErrorCode executeInstruction(Processor* cpu, size_t* index)
         case CMD_JNE:   return cpuJump(cpu, index);
         case CMD_IN:    return cpuIn(cpu, index);
         case CMD_OUT:   return cpuOut(cpu, index);
-        case CMD_HLT:   return cpuHlt(index);
+        case CMD_HLT:   return ERR_EXIT;
         default:        printf("default\n"); return ERR_INVALID_INSTRUCTION;
     }
 }
@@ -102,8 +103,6 @@ ErrorCode cpuPushRegister(Processor* cpu, size_t* index)
     int value = cpu->registers[register_id];
     stackPush(&cpu->stack, value);
     (*index)++;
-
-    printf("register RAX: %d\n", cpu->registers[RAX]);
     return ERR_OK;
 }
 
@@ -182,9 +181,9 @@ ErrorCode cpuJump(Processor* cpu, size_t* index)
     if (cpu->code.buffer[*index] != CMD_JMP) {
         int value1 = 0;
         int value2 = 0;
-        stackPop(&cpu->stack, &value1);
         stackPop(&cpu->stack, &value2);
-        if (!comparator(value2, value1, (Instruction)cpu->code.buffer[*index])) {
+        stackPop(&cpu->stack, &value1);
+        if (!comparator(value1, value2, (Instruction)cpu->code.buffer[*index])) {
             *index += 2;
             return ERR_OK;
         }
@@ -250,13 +249,5 @@ ErrorCode cpuIn(Processor* cpu, size_t* index)
     stackPush(&cpu->stack, value);
 
     (*index)++;
-    return ERR_OK;
-}
-
-
-ErrorCode cpuHlt(size_t* index)
-{
-    (*index)++;
-
     return ERR_OK;
 }
