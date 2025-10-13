@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <math.h>
 
-
 #include "cpu.h"
 
 

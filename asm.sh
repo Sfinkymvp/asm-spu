@@ -14,10 +14,10 @@ FLAGS="-ggdb3 -std=c++17 -O0 \
 	-Wno-narrowing -Wno-old-style-cast -Wno-varargs \
     -fcheck-new -fsized-deallocation -fstack-protector \
 	-fstrict-overflow -flto-odr-type-merging -fno-omit-frame-pointer \
-	-Wlarger-than=16384 -Wstack-usage=8192 -pie -fPIE -Werror=vla \
+	-Wlarger-than=32768 -Wstack-usage=8192 -pie -fPIE -Werror=vla \
 	-fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr"
 
-FILES="asm_main.cpp asm.cpp asm_input.cpp asm_output.cpp"
+FILES="asm_main.cpp asm.cpp asm_input.cpp asm_output.cpp asm_labels.cpp"
 
 g++ $FILES $FLAGS -o asm
 

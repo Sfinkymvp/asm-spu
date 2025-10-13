@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #include "asm_data.h"
 #include "asm.h"
@@ -8,27 +10,35 @@
 
 int main(int argc, const char** argv)
 {
-    AssemblyData data = {};
+    AssemblyData asmdata = {};
     ErrorCode err = ERR_OK;
 
-    err = parseArguments(&data.args, (size_t)argc, argv);
-    REPORT_AND_RETURN(err, &data);
+    err = parseArguments(&asmdata.args, (size_t)argc, argv);
+    REPORT_AND_RETURN(err, &asmdata);
 
     printf("MEOW1\n");
-    err = initializeBuffer(&data.buffer, data.args.input_file);
-    REPORT_AND_RETURN(err, &data);
+    err = initializeBuffer(&asmdata.buffer, asmdata.args.input_file);
+    REPORT_AND_RETURN(err, &asmdata);
+
+    asmdata.label_table.labels = (Label*)calloc(START_CAPACITY, sizeof(Label));
+    asmdata.label_table.capacity = START_CAPACITY;
+    asmdata.refs_table.labels = (Label*)calloc(START_CAPACITY, sizeof(Label));
+    asmdata.refs_table.capacity = START_CAPACITY;
+
+    assert(asmdata.label_table.labels != NULL);
+    assert(asmdata.refs_table.labels != NULL);
 
     printf("MEOW2\n");
-    err = assembler(&data.code, data.buffer);
-    REPORT_AND_RETURN(err, &data);
+    err = assembler(&asmdata);
+    REPORT_AND_RETURN(err, &asmdata);
 
     printf("MEOW3\n");
-    err = writeByteCodeToFile(&data.code, data.args.output_file);
-    REPORT_AND_RETURN(err, &data);
+    err = writeByteCodeToFile(&asmdata.code, asmdata.args.output_file);
+    REPORT_AND_RETURN(err, &asmdata);
   
     printf("MEOWFINAL\n");
-    printf("%zu\n", data.code.instruction_count);
-    destroyData(&data);
+    printf("%zu\n", asmdata.code.instruction_count);
+    assemblerDtor(&asmdata);
 
     return 0;
 }

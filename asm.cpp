@@ -5,9 +5,11 @@
 
 #include "asm.h"
 #include "asm_data.h"
+#include "asm_labels.h"
 
 
 const char* error_messages[] = {
+    "This message should not be printed",
     "This message should not be printed",
     "Failed to open file",
     "Failed to read data from file",
@@ -16,86 +18,119 @@ const char* error_messages[] = {
     "Unknown command line argument",
     "Unknown processor instruction",
     "Unknown register name",
+    "Unknown label",
     "Failed to allocate memory"};
 
 
-ErrorCode assembler(ByteCode* code, char* buffer)
+ErrorCode assembler(AssemblyData* asmdata)
 {
-    assert(code != NULL);
-    assert(buffer != NULL);
+    assert(asmdata != NULL);
+    assert(asmdata->buffer != NULL);
+    assert(asmdata->label_table.labels != NULL);
+    assert(asmdata->refs_table.labels != NULL);
 
-    initializeByteCode(code, START_CAPACITY);
+    ErrorCode err = ERR_OK;
+    err = initializeByteCode(&asmdata->code, START_CAPACITY);
+    if (err != ERR_OK)
+        return err;
 
-    char instruction[MAX_INSTRUCTION_LEN + 1] = "";
-    char* token = strtok(buffer, "\n");
     size_t index = 0;
-    ErrorCode error_code = ERR_OK;
+    char* buffer_copy = strdup(asmdata->buffer);
+    if (buffer_copy == NULL)
+        return ERR_OUT_OF_MEMORY;
+    err = processInstructions(asmdata, buffer_copy, &index);
+    free(buffer_copy);
+    if (err != ERR_OK)
+        return err;
 
-    while (token != NULL && error_code == ERR_OK) {
-        if (index >= code->capacity - 1)
-            error_code = expandByteCode(code);
+    err = processLabelReferences(asmdata);
+    if (err != ERR_OK)
+        return err;
 
-        if (error_code != ERR_OK)
-            break;
-        error_code = assembleInstruction(code, token, instruction, &index);
-
-        token = strtok(NULL, "\n");
-    }
-
-    if (error_code != ERR_OK) {
-        free(code->data);
-        code->data = NULL;
-        return error_code;
-    }
-
-    code->instruction_count = index;
+    asmdata->code.instruction_count = index;
     return ERR_OK;
 }
 
 
-ErrorCode assembleInstruction(ByteCode* code, char* substring, char* instruction, size_t* index)
+ErrorCode processInstructions(AssemblyData* asmdata, char* buffer, size_t* index)
 {
-    assert(code != NULL);
+    assert(asmdata != NULL);
+    assert(asmdata->buffer != NULL);
+    assert(asmdata->code.data != NULL);
+    assert(asmdata->label_table.labels != NULL);
+    assert(asmdata->refs_table.labels != NULL);
+    assert(buffer != NULL);
+    assert(index != NULL);
+
+    char instruction[MAX_INSTRUCTION_LEN + 1] = "";
+    char* token = strtok(buffer, "\n");
+    ErrorCode err = ERR_OK;
+    while (token != NULL && err == ERR_OK) {
+        if (*index >= asmdata->code.capacity - 1)
+            if ((err = expandByteCode(&asmdata->code)) != ERR_OK)
+                break;
+
+        err = assembleInstruction(asmdata, token, instruction, index);
+        token = strtok(NULL, "\n");
+    }
+
+    if (err != ERR_OK)
+        return err;
+
+    return ERR_OK;
+
+}
+
+
+ErrorCode assembleInstruction(AssemblyData* asmdata, char* substring, char* instruction, size_t* index)
+{
+    assert(asmdata != NULL);
+    assert(asmdata->buffer != NULL);
+    assert(asmdata->code.data != NULL);
+    assert(asmdata->label_table.labels != NULL);
+    assert(asmdata->refs_table.labels != NULL);
     assert(substring != NULL);
     assert(instruction != NULL);
     assert(index != NULL);
 
+//    printf("in assembleInstruction: ic - %zu, capacity - %zu\n", asmdata->code.instruction_count, asmdata->code.capacity);
+//    printf("in assembleInstruction: index - %zu, data - %d\n", *index, asmdata->code.data[*index]);
     if (sscanf(substring, "%5s", instruction) != 1) {
+        printf("YOY\n");
         return ERR_INVALID_INSTRUCTION;
     }
 
+    int* data = asmdata->code.data; 
     ErrorCode err = ERR_OK;
-    if (strcmp(instruction, "HLT") == 0) {
-        code->data[*index] = (int)CMD_HLT;
-    } else if (strcmp(instruction, "PUSH") == 0) {
-        err = asmPushValue(code, substring, index);
-    } else if (strcmp(instruction, "ADD") == 0) {
-        code->data[*index] = (int)CMD_ADD;
-    } else if (strcmp(instruction, "SUB") == 0) {
-        code->data[*index] = (int)CMD_SUB;
-    } else if (strcmp(instruction, "DIV") == 0) {
-        code->data[*index] = (int)CMD_DIV;
-    } else if (strcmp(instruction, "MUL") == 0) {
-        code->data[*index] = (int)CMD_MUL;
-    } else if (strcmp(instruction, "SQRT") == 0) {
-        code->data[*index] = (int)CMD_SQRT;
-    } else if (strcmp(instruction, "PUSHR") == 0) {
-        err = asmPushRegister(code, substring, index);
-    } else if (strcmp(instruction, "POPR") == 0) {
-        err = asmPopRegister(code, substring, index);
-    } else if (strcmp(instruction, "IN") == 0) {
-        code->data[*index] = (int)CMD_IN;
-    } else if (strcmp(instruction, "OUT") == 0) {
-        code->data[*index] = (int)CMD_OUT;
-    } else if (asmJump(code, substring, instruction, index) != ERR_OK) {
+    if (instruction[0] == ':')
+        err = asmLabel(&asmdata->label_table, substring, index);
+    else if (strcmp(instruction, "HLT") == 0)
+        data[(*index)++] = (int)CMD_HLT;
+    else if (strcmp(instruction, "PUSH") == 0)
+        err = asmPushValue(&asmdata->code, substring, index);
+    else if (strcmp(instruction, "ADD") == 0)
+        data[(*index)++] = (int)CMD_ADD;
+    else if (strcmp(instruction, "SUB") == 0)
+        data[(*index)++] = (int)CMD_SUB;
+    else if (strcmp(instruction, "DIV") == 0)
+        data[(*index)++] = (int)CMD_DIV;
+    else if (strcmp(instruction, "MUL") == 0)
+        data[(*index)++] = (int)CMD_MUL;
+    else if (strcmp(instruction, "SQRT") == 0)
+        data[(*index)++] = (int)CMD_SQRT;
+    else if (strcmp(instruction, "PUSHR") == 0)
+        err = asmPushRegister(&asmdata->code, substring, index);
+    else if (strcmp(instruction, "POPR") == 0)
+        err = asmPopRegister(&asmdata->code, substring, index);
+    else if (strcmp(instruction, "IN") == 0)
+        asmdata->code.data[(*index)++] = (int)CMD_IN;
+    else if (strcmp(instruction, "OUT") == 0)
+        asmdata->code.data[(*index)++] = (int)CMD_OUT;
+    else if (asmJump(asmdata, substring, instruction, index) != ERR_OK)
         return ERR_INVALID_INSTRUCTION;
-    }
 
-    if (err != ERR_OK) {
+    if (err != ERR_OK)
         return err;
-    }
-
-    (*index)++;
     return ERR_OK;
 }
 
@@ -109,8 +144,12 @@ ErrorCode asmPushValue(ByteCode* code, const char* substring, size_t* index)
     if (sscanf(substring, "%*s %d", &value) != 1)
         return ERR_INVALID_INSTRUCTION;
 
+//    printf("add value to data: %d, index: %zu\n", CMD_PUSH, *index);
     code->data[*index] = (int)CMD_PUSH;
+//    printf("add value to data: %d, index: %zu\n", value, *index + 1);
     code->data[++(*index)] = value;
+    (*index)++;
+
     return ERR_OK;
 }
 
@@ -124,22 +163,14 @@ ErrorCode getRegister(Register* reg, const char* substring)
     if (sscanf(substring, "%*s %s", reg_name) != 1)
         return ERR_INVALID_REGISTER;
 
-    if (strcmp(reg_name, "RESERVED") == 0)
-        *reg = RESERVED;
-    else if (strcmp(reg_name, "RAX") == 0)
-        *reg = RAX;
-    else if (strcmp(reg_name, "RBX") == 0)
-        *reg = RBX;
-    else if (strcmp(reg_name, "RCX") == 0)
-        *reg = RCX;
-    else if (strcmp(reg_name, "RDX") == 0)
-        *reg = RDX;
-    else if (strcmp(reg_name, "REX") == 0)
-        *reg = REX;
-    else if (strcmp(reg_name, "RFX") == 0)
-        *reg = RFX;
-    else if (strcmp(reg_name, "RGX") == 0)
-        *reg = RGX;
+    if (strcmp(reg_name, "RESERVED") == 0) *reg = RESERVED;
+    else if (strcmp(reg_name, "RAX") == 0) *reg = RAX;
+    else if (strcmp(reg_name, "RBX") == 0) *reg = RBX;
+    else if (strcmp(reg_name, "RCX") == 0) *reg = RCX;
+    else if (strcmp(reg_name, "RDX") == 0) *reg = RDX;
+    else if (strcmp(reg_name, "REX") == 0) *reg = REX;
+    else if (strcmp(reg_name, "RFX") == 0) *reg = RFX;
+    else if (strcmp(reg_name, "RGX") == 0) *reg = RGX;
     else
         return ERR_INVALID_REGISTER;
 
@@ -158,8 +189,12 @@ ErrorCode asmPushRegister(ByteCode* code, const char* substring, size_t* index)
     if (err != ERR_OK)
         return err;
 
+//    printf("add value to data: %d, index: %zu\n", CMD_PUSHR, *index + 1);
     code->data[*index] = (int)CMD_PUSHR;
+//    printf("add value to data: %d, index: %zu\n", reg, *index);
     code->data[++(*index)] = (int)reg;
+    (*index)++;
+
     return ERR_OK;
 }
 
@@ -175,40 +210,105 @@ ErrorCode asmPopRegister(ByteCode* code, const char* substring, size_t* index)
     if (err != ERR_OK)
         return err;
 
+//    printf("add value to data: %d, index: %zu\n", CMD_POPR, *index);
     code->data[*index] = (int)CMD_POPR;
+//    printf("add value to data: %d, index: %zu\n", reg, *index + 1);
     code->data[++(*index)] = (int)reg;
+    (*index)++;
+
     return ERR_OK;
 }
 
 
-ErrorCode asmJump(ByteCode* code, const char* substring, const char* instruction, size_t* index)
+ErrorCode asmLabel(LabelTable* label_table, const char* substring, size_t* index)
+{
+    assert(label_table != NULL);
+    assert(label_table->labels != NULL);
+    assert(substring != NULL);
+    assert(index != NULL);
+
+    ErrorCode err = ERR_OK;
+    if (label_table->count == label_table->capacity)
+        err = labelTableExpand(label_table);
+    if (err != ERR_OK)
+        return err;
+
+    char label_name[LABEL_NAME_MAX] = "";
+    if (sscanf(substring, ":%" LABEL_LEN_MAX_STR "s", label_name) != 1)
+        return ERR_INVALID_LABEL;
+//    printf("index: int %d, size_t %zu\n", *index, *index);
+    addLabel(&label_table->labels[label_table->count++], label_name, (int)*index);
+    return ERR_OK;
+}
+
+
+ErrorCode processLabelReferences(AssemblyData* asmdata)
+{
+    assert(asmdata != NULL);
+    assert(asmdata->buffer != NULL);
+    assert(asmdata->code.data != NULL);
+    assert(asmdata->label_table.labels != NULL);
+    assert(asmdata->refs_table.labels != NULL);
+
+    for (size_t index = 0; index < asmdata->refs_table.count; index++) {
+        int address = getLabelAddress(&asmdata->label_table,
+                                       asmdata->refs_table.labels[index].name);
+        if (address == WAIT_LABEL)
+            return ERR_INVALID_LABEL;
+
+        int bytecode_address = (int)asmdata->refs_table.labels[index].address;
+//        printf("bytecode_address: %d, address = %d\n", bytecode_address, address);
+        asmdata->code.data[bytecode_address] = address;
+    }
+
+    return ERR_OK;
+}
+
+
+ErrorCode asmJump(AssemblyData* asmdata, const char* substring, const char* instruction, size_t* index)
 {   
-    assert(code != NULL);
+    assert(asmdata != NULL);
+    assert(asmdata->code.data != NULL);
     assert(substring != NULL);
     assert(instruction != NULL);
     assert(index != NULL);
 
-    if (strcmp(instruction, "JMP") == 0)
-        code->data[*index] = (int)CMD_JMP;
-    else if (strcmp(instruction, "JB") == 0)
-        code->data[*index] = (int)CMD_JB;
-    else if (strcmp(instruction, "JBE") == 0)
-        code->data[*index] = (int)CMD_JBE;
-    else if (strcmp(instruction, "JA") == 0)
-        code->data[*index] = (int)CMD_JA;
-    else if (strcmp(instruction, "JAE") == 0)
-        code->data[*index] = (int)CMD_JAE;
-    else if (strcmp(instruction, "JE") == 0)
-        code->data[*index] = (int)CMD_JE;
-    else if (strcmp(instruction, "JNE") == 0)
-        code->data[*index] = (int)CMD_JNE;
+    ErrorCode err = parseJumpInstruction(&asmdata->code.data[*index], instruction);
+    if (err != ERR_OK)
+        return err;
+    
+    char label_name[LABEL_NAME_MAX] = "";
+    if (sscanf(substring, "%*s :%s", label_name) != 1)
+        return ERR_INVALID_LABEL;
+   
+    int address = getLabelAddress(&asmdata->label_table, label_name);
+    if (address != WAIT_LABEL) {
+//       printf("address: %d\n", address);
+        asmdata->code.data[++(*index)] = address;
+    } else {
+//        printf("label name: %s, index: %zu\n", label_name, *index + 1);
+//        printf("index int: %d\n", (int)*index + 1);
+        addLabel(&asmdata->refs_table.labels[asmdata->refs_table.count++], label_name, (int)++(*index));
+//        printf("refs_table.count = %zu, label_table.count = %zu\n",
+//                asmdata->refs_table.count, asmdata->label_table.count
+    }
+    (*index)++;
+
+    return ERR_OK;
+}
+
+
+ErrorCode parseJumpInstruction(int* element, const char* instruction)
+{
+    if      (strcmp(instruction, "JMP") == 0) *element = (int)CMD_JMP;
+    else if (strcmp(instruction, "JB")  == 0) *element = (int)CMD_JB;
+    else if (strcmp(instruction, "JBE") == 0) *element = (int)CMD_JBE;
+    else if (strcmp(instruction, "JA")  == 0) *element = (int)CMD_JA;
+    else if (strcmp(instruction, "JAE") == 0) *element = (int)CMD_JAE;
+    else if (strcmp(instruction, "JE")  == 0) *element = (int)CMD_JE;
+    else if (strcmp(instruction, "JNE") == 0) *element = (int)CMD_JNE;
     else
         return ERR_INVALID_INSTRUCTION;
-
-    int value = 0;
-    if (sscanf(substring, "%*s %d", &value) != 1)
-        return ERR_INVALID_INSTRUCTION;
-    code->data[++(*index)] = value;
 
     return ERR_OK;
 }
@@ -241,10 +341,12 @@ ErrorCode expandByteCode(ByteCode* code)
 }
 
 
-void destroyData(AssemblyData* data)
+void assemblerDtor(AssemblyData* asmdata)
 {
-    assert(data != NULL);
+    assert(asmdata != NULL);
    
-    free(data->buffer);
-    free(data->code.data);
+    free(asmdata->buffer);
+    free(asmdata->code.data);
+    free(asmdata->refs_table.labels);
+    free(asmdata->label_table.labels);
 }

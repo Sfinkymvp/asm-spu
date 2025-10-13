@@ -5,10 +5,13 @@
 #include "asm_data.h"
 
 
-ErrorCode assembler(ByteCode* code, char* buffer);
+ErrorCode assembler(AssemblyData* asmdata);
 
 
-ErrorCode assembleInstruction(ByteCode* code, char* substring, char* instruction, size_t* index);
+ErrorCode processInstructions(AssemblyData* asmdata, char* buffer, size_t* index);
+
+
+ErrorCode assembleInstruction(AssemblyData* asmdata, char* substring, char* instruction, size_t* index);
 
 
 ErrorCode asmPushValue(ByteCode* code, const char* substring, size_t* index);
@@ -23,7 +26,16 @@ ErrorCode asmPushRegister(ByteCode* code, const char* substring, size_t* index);
 ErrorCode asmPopRegister(ByteCode* code, const char* substring, size_t* index);
 
 
-ErrorCode asmJump(ByteCode* code, const char* substring, const char* instruction, size_t* index);
+ErrorCode asmLabel(LabelTable* label_table, const char* substring, size_t* index);
+
+
+ErrorCode processLabelReferences(AssemblyData* asmdata);
+
+
+ErrorCode asmJump(AssemblyData* asmdata, const char* substring, const char* instruction, size_t* index);
+
+
+ErrorCode parseJumpInstruction(int* element, const char* instruction);
 
 
 ErrorCode initializeByteCode(ByteCode* code, size_t start_capacity);
@@ -32,7 +44,7 @@ ErrorCode initializeByteCode(ByteCode* code, size_t start_capacity);
 ErrorCode expandByteCode(ByteCode* code);
 
 
-void destroyData(AssemblyData* data);
+void assemblerDtor(AssemblyData* asmdata);
 
 
 #endif // _ASM_H_

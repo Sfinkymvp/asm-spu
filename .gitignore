@@ -3,5 +3,6 @@ cpu
 asm
 outLesson
 testLesson
-test[0-9]*
-out[0-9]*
+test
+out
+
