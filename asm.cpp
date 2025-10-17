@@ -43,6 +43,9 @@ ErrorCode assembler(AssemblyData* asmdata)
     if (err != ERR_OK)
         return err;
 
+    printf("before processLabelReferences\n");
+    printf("label count: %zu, label capacity: %zu\n", asmdata->label_table.count, asmdata->label_table.capacity);
+    printf("fixup count: %zu, fixup capacity: %zu\n", asmdata->refs_table.count, asmdata->refs_table.capacity);
     err = processLabelReferences(asmdata);
     if (err != ERR_OK)
         return err;
@@ -74,8 +77,10 @@ ErrorCode processInstructions(AssemblyData* asmdata, char* buffer, size_t* index
         token = strtok(NULL, "\n");
     }
 
-    if (err != ERR_OK)
+    if (err != ERR_OK) {
+        printf("index error: %zu\n", *index);
         return err;
+    }
 
     return ERR_OK;
 
@@ -126,7 +131,9 @@ ErrorCode assembleInstruction(AssemblyData* asmdata, char* substring, char* inst
         asmdata->code.data[(*index)++] = (int)CMD_IN;
     else if (strcmp(instruction, "OUT") == 0)
         asmdata->code.data[(*index)++] = (int)CMD_OUT;
-    else if (asmJump(asmdata, substring, instruction, index) != ERR_OK)
+    else if (strcmp(instruction, "RET") == 0)
+        asmdata->code.data[(*index)++] = (int)CMD_RET;
+    else if (asmLabels(asmdata, substring, instruction, index) != ERR_OK)
         return ERR_INVALID_INSTRUCTION;
 
     if (err != ERR_OK)
@@ -234,8 +241,10 @@ ErrorCode asmLabel(LabelTable* label_table, const char* substring, size_t* index
         return err;
 
     char label_name[LABEL_NAME_MAX] = "";
-    if (sscanf(substring, ":%" LABEL_LEN_MAX_STR "s", label_name) != 1)
+    if (sscanf(substring, ":%" LABEL_LEN_MAX_STR "s", label_name) != 1) {
+        printf("Label string: %s\n", label_name);
         return ERR_INVALID_LABEL;
+    }
 //    printf("index: int %d, size_t %zu\n", *index, *index);
     addLabel(&label_table->labels[label_table->count++], label_name, (int)*index);
     return ERR_OK;
@@ -253,8 +262,13 @@ ErrorCode processLabelReferences(AssemblyData* asmdata)
     for (size_t index = 0; index < asmdata->refs_table.count; index++) {
         int address = getLabelAddress(&asmdata->label_table,
                                        asmdata->refs_table.labels[index].name);
-        if (address == WAIT_LABEL)
+        if (address == WAIT_LABEL) {
+            printf("I FIND ERROR\n");
+            printf("String: %s\n", asmdata->refs_table.labels[index].name);
+            for (size_t ind = 0; ind < asmdata->refs_table.count; ind++)
+                printf("* %s\n", asmdata->refs_table.labels[ind].name);
             return ERR_INVALID_LABEL;
+        }
 
         int bytecode_address = (int)asmdata->refs_table.labels[index].address;
 //        printf("bytecode_address: %d, address = %d\n", bytecode_address, address);
@@ -265,7 +279,7 @@ ErrorCode processLabelReferences(AssemblyData* asmdata)
 }
 
 
-ErrorCode asmJump(AssemblyData* asmdata, const char* substring, const char* instruction, size_t* index)
+ErrorCode asmLabels(AssemblyData* asmdata, const char* substring, const char* instruction, size_t* index)
 {   
     assert(asmdata != NULL);
     assert(asmdata->code.data != NULL);
@@ -273,13 +287,17 @@ ErrorCode asmJump(AssemblyData* asmdata, const char* substring, const char* inst
     assert(instruction != NULL);
     assert(index != NULL);
 
-    ErrorCode err = parseJumpInstruction(&asmdata->code.data[*index], instruction);
-    if (err != ERR_OK)
+    ErrorCode err = parseLabelInstruction(&asmdata->code.data[*index], instruction);
+    if (err != ERR_OK) {
+        printf("Error in ParseLabelInstruction(asmLabels)\n");
         return err;
+    }
     
     char label_name[LABEL_NAME_MAX] = "";
-    if (sscanf(substring, "%*s :%s", label_name) != 1)
+    if (sscanf(substring, "%*s :%s", label_name) != 1) {
+        printf("error string: %s\n", substring);
         return ERR_INVALID_LABEL;
+    }
    
     int address = getLabelAddress(&asmdata->label_table, label_name);
     if (address != WAIT_LABEL) {
@@ -298,15 +316,16 @@ ErrorCode asmJump(AssemblyData* asmdata, const char* substring, const char* inst
 }
 
 
-ErrorCode parseJumpInstruction(int* element, const char* instruction)
+ErrorCode parseLabelInstruction(int* element, const char* instruction)
 {
-    if      (strcmp(instruction, "JMP") == 0) *element = (int)CMD_JMP;
-    else if (strcmp(instruction, "JB")  == 0) *element = (int)CMD_JB;
-    else if (strcmp(instruction, "JBE") == 0) *element = (int)CMD_JBE;
-    else if (strcmp(instruction, "JA")  == 0) *element = (int)CMD_JA;
-    else if (strcmp(instruction, "JAE") == 0) *element = (int)CMD_JAE;
-    else if (strcmp(instruction, "JE")  == 0) *element = (int)CMD_JE;
-    else if (strcmp(instruction, "JNE") == 0) *element = (int)CMD_JNE;
+    if      (strcmp(instruction, "CALL") == 0) *element = (int)CMD_CALL;
+    else if (strcmp(instruction, "JMP") == 0)  *element = (int)CMD_JMP;
+    else if (strcmp(instruction, "JB")  == 0)  *element = (int)CMD_JB;
+    else if (strcmp(instruction, "JBE") == 0)  *element = (int)CMD_JBE;
+    else if (strcmp(instruction, "JA")  == 0)  *element = (int)CMD_JA;
+    else if (strcmp(instruction, "JAE") == 0)  *element = (int)CMD_JAE;
+    else if (strcmp(instruction, "JE")  == 0)  *element = (int)CMD_JE;
+    else if (strcmp(instruction, "JNE") == 0)  *element = (int)CMD_JNE;
     else
         return ERR_INVALID_INSTRUCTION;
 

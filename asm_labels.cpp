@@ -8,19 +8,6 @@
 #include "asm_data.h"
 
 
-bool isLabelsDefined(LabelTable* refs_table)
-{
-    assert(refs_table != NULL);
-    assert(refs_table->labels != NULL);
-
-    for (size_t index = 0; index < refs_table->count; index++)
-        if (refs_table->labels[index].address == WAIT_LABEL)
-            return false;
-    
-    return true;
-}
-
-
 ErrorCode labelTableExpand(LabelTable* label_table)
 {
     assert(label_table != NULL);
@@ -47,6 +34,7 @@ int getLabelAddress(LabelTable* label_table, const char* label_name)
         if (strcmp(label_table->labels[index].name, label_name) == 0)
             return label_table->labels[index].address;
 
+    printf("return wait label label with string: %s\n", label_name);
     return WAIT_LABEL;
 }
 

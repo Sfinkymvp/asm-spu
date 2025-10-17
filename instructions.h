@@ -19,12 +19,14 @@ typedef enum {
     CMD_JAE   =  15,
     CMD_JE    =  16,
     CMD_JNE   =  17,
+    CMD_CALL  =  18,
+    CMD_RET   =  19,
     CMD_PUSHR =  33,
     CMD_POPR  =  34
 } Instruction;
 
 
-const size_t MAX_INSTRUCTION_LEN = 5;
+const int MAX_INSTRUCTION_LEN = 5;
 
 
 typedef enum {
@@ -39,7 +41,7 @@ typedef enum {
 } Register;
 
 
-const size_t MAX_REGISTER_LEN = 8;
+const int MAX_REGISTER_LEN = 8;
 
 
 #endif // _INSTRUCTIONS_H_

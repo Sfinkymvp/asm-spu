@@ -31,7 +31,7 @@ typedef enum {
 } ErrorCode;
 
 
-const size_t REGISTER_COUNT = RGX + 1;
+const int REGISTER_COUNT = RGX + 1;
 
 
 typedef struct {
@@ -49,6 +49,7 @@ typedef struct {
 typedef struct {
     Arguments args;
     Stack_t stack; 
+    Stack_t call_stack;
     ByteCode code;
     size_t ip;
     int registers[REGISTER_COUNT];

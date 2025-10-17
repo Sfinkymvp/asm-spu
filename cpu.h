@@ -15,6 +15,15 @@ ErrorCode executeProcessor(Processor* cpu);
 ErrorCode executeInstruction(Processor* cpu, size_t* index);
 
 
+ErrorCode cpuFunc(Processor* cpu, size_t* index);
+
+
+ErrorCode cpuCall(Processor* cpu, size_t* index);
+
+
+ErrorCode cpuRet(Processor* cpu, size_t* index);
+
+
 ErrorCode cpuStack(Processor* cpu, size_t* index);
 
 

@@ -5,9 +5,6 @@
 #include "asm_data.h"
 
 
-bool isLabelsDefined(LabelTable* refs_table);
-
-
 ErrorCode labelTableExpand(LabelTable* label_table);
 
 

@@ -8,8 +8,8 @@
 const size_t START_CAPACITY = 16;
 
 
-const size_t LABEL_NAME_MAX = 16;
-#define LABEL_LEN_MAX_STR "15"
+const size_t LABEL_NAME_MAX = 30;
+#define LABEL_LEN_MAX_STR "29"
 
 
 const int WAIT_LABEL = -1;

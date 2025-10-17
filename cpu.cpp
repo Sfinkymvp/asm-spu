@@ -41,6 +41,8 @@ ErrorCode executeInstruction(Processor* cpu, size_t* index)
         case CMD_PUSH:
         case CMD_PUSHR:
         case CMD_POPR:  return cpuStack(cpu, index);
+        case CMD_CALL:
+        case CMD_RET:   return cpuFunc(cpu, index);
         case CMD_JMP:
         case CMD_JB:
         case CMD_JBE:
@@ -51,8 +53,53 @@ ErrorCode executeInstruction(Processor* cpu, size_t* index)
         case CMD_IN:    return cpuIn(cpu, index);
         case CMD_OUT:   return cpuOut(cpu, index);
         case CMD_HLT:   return ERR_EXIT;
-        default:        printf("default\n"); return ERR_INVALID_INSTRUCTION;
+        default:        return ERR_INVALID_INSTRUCTION;
     }
+}
+
+
+ErrorCode cpuFunc(Processor* cpu, size_t* index)
+{
+    assert(cpu != NULL);
+    assert(cpu->call_stack.data != NULL);
+    assert(cpu->code.buffer != NULL);
+    assert(index != NULL);
+
+    switch (cpu->code.buffer[*index]) {
+        case CMD_CALL:  return cpuCall(cpu, index);
+        case CMD_RET:   return cpuRet(cpu, index);
+        default:        return ERR_INVALID_OPERATION;
+    }
+}
+
+
+ErrorCode cpuCall(Processor* cpu, size_t* index)
+{
+    assert(cpu != NULL);
+    assert(cpu->call_stack.data != NULL);
+    assert(cpu->code.buffer != NULL);
+    assert(index != NULL);
+
+    stackPush(&cpu->call_stack, (Element_t)*index + 2);
+    int new_index = cpu->code.buffer[++(*index)];
+    *index = (size_t)new_index;
+
+    return ERR_OK;
+}
+
+
+ErrorCode cpuRet(Processor* cpu, size_t* index)
+{
+    assert(cpu != NULL);
+    assert(cpu->call_stack.data != NULL);
+    assert(cpu->code.buffer != NULL);
+    assert(index != NULL);
+
+    int new_index = 0;
+    stackPop(&cpu->call_stack, &new_index);
+    *index = (size_t)new_index;
+
+    return ERR_OK;
 }
 
 
@@ -63,10 +110,10 @@ ErrorCode cpuStack(Processor* cpu, size_t* index)
     assert(cpu->code.buffer != NULL);
     assert(index != NULL);
 
-    switch ((Instruction)cpu->code.buffer[*index]) {
-        case CMD_PUSH:  return STACK_ERR(cpuPushValue(cpu, index));
-        case CMD_PUSHR: return STACK_ERR(cpuPushRegister(cpu, index));
-        case CMD_POPR:  return STACK_ERR(cpuPopRegister(cpu, index));
+    switch (cpu->code.buffer[*index]) {
+        case CMD_PUSH:  return cpuPushValue(cpu, index);
+        case CMD_PUSHR: return cpuPushRegister(cpu, index);
+        case CMD_POPR:  return cpuPopRegister(cpu, index);
         default:        
         printf("INVAL\n");
         return ERR_INVALID_OPERATION;
@@ -138,12 +185,16 @@ ErrorCode cpuArithmetic(Processor* cpu, size_t* index)
     stackPop(&cpu->stack, &value1);
    
     Instruction instruction = (Instruction)cpu->code.buffer[(*index)++];
-    return STACK_ERR(cpuPushArithmetic(cpu, value1, value2, instruction));
+    return cpuPushArithmetic(cpu, value1, value2, instruction);
 }
 
 
 ErrorCode cpuPushArithmetic(Processor* cpu, int value1, int value2, Instruction instruction)
 {
+    assert(cpu != NULL);
+    assert(cpu->stack.data != NULL);
+    assert(cpu->code.buffer != NULL);
+
     switch (instruction) {
         case CMD_ADD: return STACK_ERR(stackPush(&cpu->stack, value1 + value2));
         case CMD_SUB: return STACK_ERR(stackPush(&cpu->stack, value1 - value2));
@@ -187,9 +238,9 @@ ErrorCode cpuJump(Processor* cpu, size_t* index)
             return ERR_OK;
         }
     }
-   
-    *index = (size_t)cpu->code.buffer[++(*index)];
-    getchar();
+  
+    int new_index = cpu->code.buffer[++(*index)]; 
+    *index = (size_t)new_index;
 
     return ERR_OK;
 }

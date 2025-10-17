@@ -3,6 +3,6 @@ cpu
 asm
 outLesson
 testLesson
-test
-out
+test*
+out*
 

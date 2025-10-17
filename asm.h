@@ -32,10 +32,10 @@ ErrorCode asmLabel(LabelTable* label_table, const char* substring, size_t* index
 ErrorCode processLabelReferences(AssemblyData* asmdata);
 
 
-ErrorCode asmJump(AssemblyData* asmdata, const char* substring, const char* instruction, size_t* index);
+ErrorCode asmLabels(AssemblyData* asmdata, const char* substring, const char* instruction, size_t* index);
 
 
-ErrorCode parseJumpInstruction(int* element, const char* instruction);
+ErrorCode parseLabelInstruction(int* element, const char* instruction);
 
 
 ErrorCode initializeByteCode(ByteCode* code, size_t start_capacity);

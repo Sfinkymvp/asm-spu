@@ -15,8 +15,10 @@ int main(int argc, const char** argv)
     Processor cpu = {};
 
     stackCtor(&cpu.stack, START_STACK_CAPACITY);
-    printf("after ctor\n"); parseArguments(&cpu.args, (size_t)argc, argv);
+    stackCtor(&cpu.call_stack, START_STACK_CAPACITY);
+    printf("after ctor\n");
 
+    parseArguments(&cpu.args, (size_t)argc, argv);
     assert(cpu.args.input_file != NULL);
     printf("after parse\n");
 
@@ -27,6 +29,7 @@ int main(int argc, const char** argv)
     printf("after execute\n");    
 
     stackDtor(&cpu.stack);
+    stackDtor(&cpu.call_stack);
     free(cpu.code.buffer);
 
     printf("program completion\n");
