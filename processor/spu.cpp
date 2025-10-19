@@ -3,301 +3,266 @@
 #include <assert.h>
 #include <math.h>
 
+
 #include "spu.h"
+#include "spu_data.h"
 
 
-ErrorCode executeProcessor(Processor* spu)
+ErrorCode runProcessor(Processor* spu)
 {
     assert(spu != NULL);
     assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
 
-    for (size_t index = 0; index < spu->code.instruction_count;) {
-        ErrorCode err = ERR_OK;
-        err = executeInstruction(spu, &index);
+    ErrorCode err = ERR_OK;
+    spu->ip = 0;
+    while (spu->ip++ < (int)spu->bytecode.capacity) {
+        err = commands[spu->bytecode.data[spu->ip - 1]].handler(spu);
         if (err == ERR_EXIT)
             return ERR_OK;
         if (err != ERR_OK)
-            return err;
+            break;
     }
 
-    return ERR_OK;
-}
-
-
-ErrorCode executeInstruction(Processor* spu, size_t* index)
-{
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
-
-    switch (spu->code.buffer[*index]) {
-        case CMD_ADD: 
-        case CMD_SUB: 
-        case CMD_DIV:
-        case CMD_MUL:   return spuArithmetic(spu, index);
-        case CMD_SQRT:  return spuSqrt(spu, index);
-        case CMD_PUSH:
-        case CMD_PUSHR:
-        case CMD_POPR:  return spuStack(spu, index);
-        case CMD_CALL:
-        case CMD_RET:   return spuFunc(spu, index);
-        case CMD_JMP:
-        case CMD_JB:
-        case CMD_JBE:
-        case CMD_JA:
-        case CMD_JAE:
-        case CMD_JE:
-        case CMD_JNE:   return spuJump(spu, index);
-        case CMD_IN:    return spuIn(spu, index);
-        case CMD_OUT:   return spuOut(spu, index);
-        case CMD_HLT:   return ERR_EXIT;
-        default:        return ERR_INVALID_INSTRUCTION;
-    }
-}
-
-
-ErrorCode spuFunc(Processor* spu, size_t* index)
-{
-    assert(spu != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
-
-    switch (spu->code.buffer[*index]) {
-        case CMD_CALL:  return spuCall(spu, index);
-        case CMD_RET:   return spuRet(spu, index);
-        default:        return ERR_INVALID_OPERATION;
-    }
-}
-
-
-ErrorCode spuCall(Processor* spu, size_t* index)
-{
-    assert(spu != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
-
-    stackPush(&spu->call_stack, (Element_t)*index + 2);
-    int new_index = spu->code.buffer[++(*index)];
-    *index = (size_t)new_index;
-
-    return ERR_OK;
-}
-
-
-ErrorCode spuRet(Processor* spu, size_t* index)
-{
-    assert(spu != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
-
-    int new_index = 0;
-    stackPop(&spu->call_stack, &new_index);
-    *index = (size_t)new_index;
-
-    return ERR_OK;
-}
-
-
-ErrorCode spuStack(Processor* spu, size_t* index)
-{
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
-
-    switch (spu->code.buffer[*index]) {
-        case CMD_PUSH:  return spuPushValue(spu, index);
-        case CMD_PUSHR: return spuPushRegister(spu, index);
-        case CMD_POPR:  return spuPopRegister(spu, index);
-        default:        
-        printf("INVAL\n");
-        return ERR_INVALID_OPERATION;
-    }
-}
-
-
-ErrorCode spuPushValue(Processor* spu, size_t* index)
-{
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
-
-    int value = spu->code.buffer[++(*index)];
-    ErrorCode err = STACK_ERR(stackPush(&spu->stack, value));
-    (*index)++;
     return err;
 }
 
 
-ErrorCode spuPushRegister(Processor* spu, size_t* index)
+ErrorCode spuCmdHlt(Processor* spu)
 {
     assert(spu != NULL);
     assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
 
-    size_t register_id = (size_t)spu->code.buffer[++(*index)];
-    if (register_id >= REGISTER_COUNT)
-        return ERR_INVALID_REGISTER;
+    return ERR_EXIT;
+}
 
-    int value = spu->registers[register_id];
-    stackPush(&spu->stack, value);
-    (*index)++;
+
+ErrorCode spuCmdPush(Processor* spu)
+{
+    assert(spu != NULL);
+    assert(spu->stack.data != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
+
+    int value = spu->bytecode.data[spu->ip++];
+    STACK_ERR(stackPush(&spu->stack, value));
+
     return ERR_OK;
 }
 
 
-ErrorCode spuPopRegister(Processor* spu, size_t* index)
+ErrorCode spuCmdArithmetic(Processor* spu)
 {
     assert(spu != NULL);
     assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
-
-    size_t register_id = (size_t)spu->code.buffer[++(*index)];
-    if (register_id >= REGISTER_COUNT)
-        return ERR_INVALID_REGISTER;
-
-    int value = 0;
-    stackPop(&spu->stack, &value);
-    spu->registers[register_id] = value;
-    (*index)++;
-    return ERR_OK;
-}
-
-
-ErrorCode spuArithmetic(Processor* spu, size_t* index)
-{
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
 
     int value1 = 0;
     int value2 = 0;
     stackPop(&spu->stack, &value2);
     stackPop(&spu->stack, &value1);
-   
-    Instruction instruction = (Instruction)spu->code.buffer[(*index)++];
-    return spuPushArithmetic(spu, value1, value2, instruction);
+
+    return spuExecArithmetic(spu, value1, value2, (Instruction)spu->bytecode.data[spu->ip - 1]);
 }
 
 
-ErrorCode spuPushArithmetic(Processor* spu, int value1, int value2, Instruction instruction)
+ErrorCode spuExecArithmetic(Processor* spu, int value1, int value2, Instruction instruction)
 {
     assert(spu != NULL);
     assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
 
     switch (instruction) {
-        case CMD_ADD: return STACK_ERR(stackPush(&spu->stack, value1 + value2));
-        case CMD_SUB: return STACK_ERR(stackPush(&spu->stack, value1 - value2));
-        case CMD_MUL: return STACK_ERR(stackPush(&spu->stack, value1 * value2));
-        case CMD_DIV: return STACK_ERR(stackPush(&spu->stack, value1 / value2));
-        default:      return ERR_INVALID_INSTRUCTION;
+        case CMD_ADD: STACK_ERR(stackPush(&spu->stack, value1 + value2)); break;
+        case CMD_SUB: STACK_ERR(stackPush(&spu->stack, value1 - value2)); break;
+        case CMD_MUL: STACK_ERR(stackPush(&spu->stack, value1 * value2)); break;
+        case CMD_DIV: STACK_ERR(stackPush(&spu->stack, value1 / value2)); break;
+        default:      printf("aboba\n"); return ERR_INVALID_INSTRUCTION;
     }
-}
 
-
-ErrorCode spuSqrt(Processor* spu, size_t* index)
-{
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
-
-    int value = 0;
-    stackPop(&spu->stack, &value);
-    stackPush(&spu->stack, (int)sqrt(value));
-
-    (*index)++;
     return ERR_OK;
 }
 
 
-ErrorCode spuJump(Processor* spu, size_t* index)
+ErrorCode spuCmdSqrt(Processor* spu)
 {
     assert(spu != NULL);
     assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
 
-    if (spu->code.buffer[*index] != CMD_JMP) {
+    int value = 0;
+    STACK_ERR(stackPop(&spu->stack, &value));
+    STACK_ERR(stackPush(&spu->stack, (int)sqrt(value)));
+
+    return ERR_OK;
+}
+
+
+ErrorCode spuCmdIn(Processor* spu)
+{
+    assert(spu != NULL);
+    assert(spu->stack.data != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
+
+    int value = 0; 
+    printf("Enter number:\n");
+    if (scanf("%d", &value) != 1)
+        return ERR_INVALID_OPERATION;
+
+    STACK_ERR(stackPush(&spu->stack, value));
+    return ERR_OK;
+}
+
+
+ErrorCode spuCmdOut(Processor* spu)
+{
+    assert(spu != NULL);
+    assert(spu->stack.data != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
+
+    int value = 0;
+    STACK_ERR(stackPop(&spu->stack, &value));
+
+    printf("OUT: %d\n", value);
+    return ERR_OK;
+}
+
+
+ErrorCode spuCmdJump(Processor* spu)
+{
+    assert(spu != NULL);
+    assert(spu->stack.data != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
+
+    if (spu->bytecode.data[spu->ip - 1] != CMD_JMP) {
         int value1 = 0;
         int value2 = 0;
         stackPop(&spu->stack, &value2);
         stackPop(&spu->stack, &value1);
-        if (!comparator(value1, value2, (Instruction)spu->code.buffer[*index])) {
-            *index += 2;
+        if (!spuJumpCondition(value1, value2, (Instruction)spu->bytecode.data[spu->ip - 1])) {
+            spu->ip++;
             return ERR_OK;
         }
     }
   
-    int new_index = spu->code.buffer[++(*index)]; 
-    *index = (size_t)new_index;
-
+    spu->ip = spu->bytecode.data[spu->ip]; 
     return ERR_OK;
 }
 
 
-bool comparator(int value1, int value2, Instruction instruction)
+bool spuJumpCondition(int value1, int value2, Instruction instruction)
 {
     switch (instruction) {
-        case CMD_JMP:  return true;
         case CMD_JB:   return value1 < value2;
         case CMD_JBE:  return value1 <= value2;
         case CMD_JA:   return value1 > value2;
         case CMD_JAE:  return value1 >= value2;
         case CMD_JE:   return value1 == value2;
         case CMD_JNE:  return value1 != value2;
-        default:       printf("Invalid jump instruction\n");
-                       return false;
+        default:       return false;
     }
 }
 
 
-ErrorCode spuOut(Processor* spu, size_t* index)
+ErrorCode spuCmdCall(Processor* spu)
 {
     assert(spu != NULL);
     assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
 
-    int value = 0;
-    stackPop(&spu->stack, &value);
+    STACK_ERR(stackPush(&spu->call_stack, spu->ip + 1));
+    spu->ip = (size_t)spu->bytecode.data[spu->ip];
 
-    if (printf("ROOT: %d\n", value) < 0) {
-        printf("printf\n");
-        return ERR_INVALID_OPERATION;
-    }
-
-    (*index)++;
     return ERR_OK;
 }
 
 
-ErrorCode spuIn(Processor* spu, size_t* index)
+ErrorCode spuCmdRet(Processor* spu)
 {
     assert(spu != NULL);
     assert(spu->stack.data != NULL);
-    assert(spu->code.buffer != NULL);
-    assert(index != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
 
-    int value = 0; 
-    printf("Enter number:\n");
-    if (scanf("%d", &value) != 1) {
-        printf("scanf\n");
-        return ERR_INVALID_OPERATION;
-    }
+    int new_index = 0;
+    STACK_ERR(stackPop(&spu->call_stack, &new_index));
+    spu->ip = new_index;
 
-    stackPush(&spu->stack, value);
+    return ERR_OK;
+}
 
-    (*index)++;
+
+ErrorCode spuCmdPushr(Processor* spu)
+{
+    assert(spu != NULL);
+    assert(spu->stack.data != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
+
+    int register_id = spu->bytecode.data[spu->ip++];
+    if (register_id >= (int)REGISTER_COUNT || register_id < 0)
+        return ERR_INVALID_REGISTER;
+
+    STACK_ERR(stackPush(&spu->stack, spu->registers[register_id]));
+    return ERR_OK;
+}
+
+
+ErrorCode spuCmdPopr(Processor* spu)
+{
+    assert(spu != NULL);
+    assert(spu->stack.data != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
+
+    int register_id = spu->bytecode.data[spu->ip++];
+    if (register_id >= (int)REGISTER_COUNT || register_id < 0)
+        return ERR_INVALID_REGISTER;
+
+    int value = 0;
+    STACK_ERR(stackPop(&spu->stack, &value));
+    spu->registers[register_id] = value;
+    return ERR_OK;
+}
+
+
+ErrorCode spuCmdPushm(Processor* spu)
+{
+    assert(spu != NULL);
+    assert(spu->stack.data != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
+
+    int index = spu->registers[spu->ip++];
+    if (index >= (int)RAM_SIZE || index < 0)
+        return ERR_INVALID_MEMORY_ACCESS;
+
+    STACK_ERR(stackPush(&spu->stack, spu->ram[index]));
+    return ERR_OK;
+}
+
+
+ErrorCode spuCmdPopm(Processor* spu)
+{
+    assert(spu != NULL);
+    assert(spu->stack.data != NULL);
+    assert(spu->call_stack.data != NULL);
+    assert(spu->bytecode.data != NULL);
+
+    int index = spu->registers[spu->ip++];
+    if (index >= (int)RAM_SIZE || index < 0)
+        return ERR_INVALID_MEMORY_ACCESS;
+
+    STACK_ERR(stackPop(&spu->stack, &spu->ram[index]));
     return ERR_OK;
 }

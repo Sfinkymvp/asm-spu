@@ -6,27 +6,27 @@
 #include "spu_input.h"
 
 
-ErrorCode loadByteCode(ByteCode* code, const char* input_filename)
+ErrorCode loadByteCode(Processor* spu, const char* input_filename)
 {
-    assert(code != NULL);
+    assert(spu != NULL);
     assert(input_filename != NULL);
 
     FILE* in = fopen(input_filename, "r");
     if (in == NULL)
         return ERR_FILE_OPEN;
 
-    if (fscanf(in, "%zu", &code->instruction_count) != 1 ||
-        code->instruction_count == 0) {
+    if (fscanf(in, "%zu", &spu->bytecode.capacity) != 1 ||
+        spu->bytecode.capacity == 0) {
         fclose(in); 
         return ERR_FILE_READ;
     }
 
     ErrorCode err = ERR_OK;
-    err = createBuffer(code, code->instruction_count);
+    err = createBuffer(spu);
     if (err != ERR_OK)
         return ERR_OUT_OF_MEMORY;
 
-    err = readInstructions(code, in);
+    err = readInstructions(spu, in);
     if (fclose(in) != 0)
         return ERR_FILE_CLOSE;
 
@@ -34,45 +34,44 @@ ErrorCode loadByteCode(ByteCode* code, const char* input_filename)
 }
 
 
-ErrorCode createBuffer(ByteCode* code, size_t size)
+ErrorCode createBuffer(Processor* spu)
 {
-    assert(code != NULL);
+    assert(spu != NULL);
 
-    code->buffer = (int*)calloc(size, sizeof(int));  
-    if (code->buffer == NULL)
+    spu->bytecode.data = (int*)calloc(spu->bytecode.capacity, sizeof(int));  
+    if (spu->bytecode.data == NULL)
         return ERR_OUT_OF_MEMORY;
 
     return ERR_OK;
 }
 
 
-ErrorCode readInstructions(ByteCode* code, FILE* in)
+ErrorCode readInstructions(Processor* spu, FILE* in)
 {
-    assert(code != NULL);
-    assert(code->buffer != NULL);
+    assert(spu != NULL);
     assert(in != NULL);
 
-    for (size_t index = 0; index < code->instruction_count; index++) {
+    for (size_t index = 0; index < spu->bytecode.capacity; index++) {
         int value = 0;
         if (fscanf(in, "%d", &value) != 1)
             return ERR_FILE_READ;
 
-        code->buffer[index] = value;
+        spu->bytecode.data[index] = value;
     }
     
     return ERR_OK;
 }
 
 
-ErrorCode parseArguments(Arguments* args, size_t argc, const char** argv)
+ErrorCode parseArguments(Processor* spu, int argc, const char** argv)
 {
-    assert(args != NULL);
+    assert(spu != NULL);
     assert(argv != NULL);
 
-    size_t index = 1;
+    int index = 1;
     for (; index < argc; index++) {
         if (strcmp(argv[index], "-i") == 0)
-            parseInputFile(argc, argv, args, &index);
+            parseInputFile(argc, argv, spu, &index);
         else
             return ERR_INVALID_CMD_ARGUMENT;
     }
@@ -81,12 +80,12 @@ ErrorCode parseArguments(Arguments* args, size_t argc, const char** argv)
 }
 
 
-void parseInputFile(size_t argc, const char** argv, Arguments* args, size_t* index)
+void parseInputFile(int argc, const char** argv, Processor* spu, int* index)
 {
     assert(argv != NULL);
-    assert(args != NULL);
+    assert(spu != NULL);
     assert(index != NULL);
 
     if (*index < argc - 1)
-        args->input_file = argv[++(*index)];
+        spu->args.input_file = argv[++(*index)];
 }

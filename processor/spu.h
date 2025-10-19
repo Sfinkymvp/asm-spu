@@ -5,56 +5,52 @@
 #include "spu_data.h"
 
 
-#define STACK_ERR(result) \
-    ((result) == SUCCESS ? ERR_OK : ERR_FILE_OPEN)
+ErrorCode runProcessor(Processor* spu);
 
 
-ErrorCode executeProcessor(Processor* spu);
+ErrorCode spuCmdHlt(Processor* spu);
 
 
-ErrorCode executeInstruction(Processor* spu, size_t* index);
+ErrorCode spuCmdPush(Processor* spu);
 
 
-ErrorCode spuFunc(Processor* spu, size_t* index);
+ErrorCode spuCmdArithmetic(Processor* spu);
 
 
-ErrorCode spuCall(Processor* spu, size_t* index);
+ErrorCode spuExecArithmetic(Processor* spu, int value1, int value2, Instruction instruction);
 
 
-ErrorCode spuRet(Processor* spu, size_t* index);
+ErrorCode spuCmdSqrt(Processor* spu);
 
 
-ErrorCode spuStack(Processor* spu, size_t* index);
+ErrorCode spuCmdIn(Processor* spu);
 
 
-ErrorCode spuPushValue(Processor* spu, size_t* index);
+ErrorCode spuCmdOut(Processor* spu);
 
 
-ErrorCode spuPushRegister(Processor* spu, size_t* index);
+ErrorCode spuCmdJump(Processor* spu);
 
 
-ErrorCode spuPopRegister(Processor* spu, size_t* index);
+bool spuJumpCondition(int value1, int value2, Instruction instruction);
 
 
-ErrorCode spuArithmetic(Processor* spu, size_t* index);
+ErrorCode spuCmdCall(Processor* spu);
 
 
-ErrorCode spuPushArithmetic(Processor* spu, int value1, int value2, Instruction instruction);
+ErrorCode spuCmdRet(Processor* spu);
 
 
-ErrorCode spuSqrt(Processor* spu, size_t* index);
+ErrorCode spuCmdPushr(Processor* spu);
 
 
-ErrorCode spuJump(Processor* spu, size_t* index);
+ErrorCode spuCmdPopr(Processor* spu);
 
 
-bool comparator(int value1, int value2, Instruction instruction);
+ErrorCode spuCmdPushm(Processor* cpu);
 
 
-ErrorCode spuOut(Processor* spu, size_t* index);
-
-
-ErrorCode spuIn(Processor* spu, size_t* index);
+ErrorCode spuCmdPopm(Processor* cpu);
 
 
 #endif // _SPU_H_

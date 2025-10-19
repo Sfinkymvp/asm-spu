@@ -12,25 +12,28 @@
 
 int main(int argc, const char** argv)
 {
+    initializeCommands();
+
     Processor spu = {};
 
     stackCtor(&spu.stack, START_STACK_CAPACITY);
     stackCtor(&spu.call_stack, START_STACK_CAPACITY);
     printf("after ctor\n");
 
-    parseArguments(&spu.args, (size_t)argc, argv);
+    parseArguments(&spu, argc, argv);
     assert(spu.args.input_file != NULL);
     printf("after parse\n");
 
-    loadByteCode(&spu.code, spu.args.input_file);
+    loadByteCode(&spu, spu.args.input_file);
     printf("after load code\n");
 
-    printf("Processor exit code: %d\n", (int)executeProcessor(&spu));
+    printf("Processor exit code: %d\n", (int)runProcessor(&spu));
+    printf("ip: %d\n", spu.ip);
     printf("after execute\n");    
 
     stackDtor(&spu.stack);
     stackDtor(&spu.call_stack);
-    free(spu.code.buffer);
+    free(spu.bytecode.data);
 
     printf("program completion\n");
     return 0;
