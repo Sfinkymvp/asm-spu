@@ -1,11 +1,11 @@
-#ifndef _CPU_DATA_H_
-#define _CPU_DATA_H_
+#ifndef _SPU_DATA_H_
+#define _SPU_DATA_H_
 
 
-#include <stddef.h>
+#include <stdio.h>
 
-#include "../secure_stack/stack.h"
-#include "instructions.h"
+#include "../../secure_stack/stack.h"
+#include "../assembler/instructions.h"
 
 
 const size_t START_STACK_CAPACITY = 8;
@@ -31,9 +31,6 @@ typedef enum {
 } ErrorCode;
 
 
-const int REGISTER_COUNT = RGX + 1;
-
-
 typedef struct {
     const char* input_file;
 } Arguments;
@@ -56,4 +53,4 @@ typedef struct {
 } Processor;
 
 
-#endif // _CPU_DATA_H_
+#endif // _SPU_DATA_H_

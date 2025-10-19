@@ -3,7 +3,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "cpu_input.h"
+#include "spu_input.h"
 
 
 ErrorCode loadByteCode(ByteCode* code, const char* input_filename)

@@ -2,6 +2,9 @@
 #define _INSTRUCTIONS_H_
 
 
+#include <stdio.h>
+
+
 typedef enum {
     CMD_HLT   =  0,
     CMD_PUSH  =  1,
@@ -21,12 +24,11 @@ typedef enum {
     CMD_JNE   =  17,
     CMD_CALL  =  18,
     CMD_RET   =  19,
-    CMD_PUSHR =  33,
-    CMD_POPR  =  34
+    CMD_PUSHR =  31,
+    CMD_POPR  =  32,
+    CMD_PUSHM =  33,
+    CMD_POPM  =  34
 } Instruction;
-
-
-const int MAX_INSTRUCTION_LEN = 5;
 
 
 typedef enum {
@@ -41,7 +43,7 @@ typedef enum {
 } Register;
 
 
-const int MAX_REGISTER_LEN = 8;
+const size_t REGISTER_COUNT = 8;
 
 
 #endif // _INSTRUCTIONS_H_
