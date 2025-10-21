@@ -1,26 +1,26 @@
-IN            // Ввод коэффициента a
+IN                  // Ввод коэффициента a
 POPR RAX
-IN            // Ввод коэффициента b
+IN                  // Ввод коэффициента b
 POPR RBX
-IN            // Ввод коэффициента c
+IN                  // Ввод коэффициента c
 POPR RCX
 PUSHR RAX
 PUSH 0
-JNE :QUADRATIC        // Если a != 0, то решается квадратное уравнение, иначе линейное
+JNE :QUADRATIC      // Если a != 0, то решается квадратное уравнение, иначе линейное
 PUSHR RBX
 PUSH 0
-JNE :BNOTZERO    // Если b = 0, то проверяется истинность тождества c = 0
+JNE :BNOTZERO       // Если b = 0, то проверяется истинность тождества c = 0
 PUSH 0       
 PUSHR RCX     
-JNE :FALSEINDENTITY  // Если c = 0 -> тождество 0 = 0 верно
+JNE :FALSEINDENTITY // Если c = 0 -> тождество 0 = 0 верно
 PUSH 1
 OUT
 HLT
-:FALSEINDENTITY      // Если c != 0 -> тождество c = 0 не верно
+:FALSEINDENTITY     // Если c != 0 -> тождество c = 0 не верно
 PUSH 0
 OUT
 HLT
-:BNOTZERO    // Если b != 0, то решается линейное уравнение
+:BNOTZERO           // Если b != 0, то решается линейное уравнение
 PUSH -1
 PUSHR RCX
 MUL
@@ -30,7 +30,7 @@ OUT
 PUSH 1
 OUT
 HLT
-:QUADRATIC    // Вычисление дискриминанта D = b^2 - 4ac
+:QUADRATIC          // Вычисление дискриминанта D = b^2 - 4ac
 PUSHR RBX         
 PUSHR RBX
 MUL
@@ -43,11 +43,11 @@ SUB
 POPR RDX 
 PUSHR RDX
 PUSH 0
-JAE :ROOTS_EXISTS        // Если D < 0, то программа завершается
+JAE :ROOTS_EXISTS   // Если D < 0, то программа завершается
 PUSH 0
 OUT
 HLT
-:ROOTS_EXISTS // Находится корень из неотрицательного дискриминанта
+:ROOTS_EXISTS       // Находится корень из неотрицательного дискриминанта
 PUSHR RDX   
 SQRT
 POPR RDX
@@ -63,7 +63,7 @@ DIV
 POPR RCX
 PUSHR RDX
 PUSH 0
-JNE :TWO_ROOTS   // Если D = 0, то ищется 1 корень, иначе 2
+JNE :TWO_ROOTS       // Если D = 0, то ищется 1 корень, иначе 2
 PUSHR RCX
 OUT
 PUSH 1
@@ -82,7 +82,7 @@ DIV
 POPR RDX
 PUSHR RCX
 PUSHR RDX
-JB :BELOW    // Корни печатаются в порядке возрастания и число 1 (количество корней)
+JB :BELOW             // Корни печатаются в порядке возрастания и число 1 (количество корней)
 PUSHR RDX
 OUT
 PUSHR RCX

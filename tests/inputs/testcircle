@@ -1,51 +1,57 @@
 IN
-POPR RAX      // Радиус круга
+POPR RAX              // Радиус круга
 PUSH 0
-POPR RBX      // Индекс в памяти
+POPR RBX              // Индекс в памяти
 PUSH 40
-POPR RFX      // Колонна, в которой находится центра круга
-PUSH 15
-POPR RGX      // Ряд, в котором находится центра круга
+POPR RFX              // Колонна, в которой находится центра круга
+PUSH 20
+POPR RGX              // Ряд, в котором находится центра круга
 PUSHR RAX
-PUSH 15
-JA :EXIT      // Если радиус больше допустимого, то выход
+PUSH 19
+JA :EXIT              // Если радиус больше допустимого, то выход
 :LOOP
 PUSHR RBX
-PUSH 2560     // Размер памяти
-JAE :EXIT     // Если индекс в памяти больше допустимого, цикл прерывается
+PUSH 3200             // Размер памяти
+JAE :EXIT             // Если индекс в памяти больше допустимого, цикл прерывается
 PUSHR RBX
-PUSH 80       // Длина ряда
+PUSH 80               // Длина ряда
 DIV
-POPR RCX      // Номер ряда текущей точки
+POPR RCX              // Номер ряда текущей точки
 PUSHR RBX
 PUSHR RCX
 PUSH 80
 MUL
 SUB
-POPR RDX      // Номер колонны текущей точки
-CALL :DISTANCE      // Считает дистанцию от центра круга до точки (в REX)
+POPR RDX              // Номер колонны текущей точки
+CALL :Q_EQUATION        // Считает дистанцию от центра круга до точки (в REX)
 PUSHR REX
 PUSHR RAX
-JA :DOT  // Если расстояние меньше либо равно радиусу, то переход
+PUSHR RAX
+MUL
+PUSH 4
+MUL
+JA :DOT               // Если расстояние меньше либо равно радиусу, то переход
 PUSHR REX
 PUSHR RAX
-PUSH 2
-DIV
+PUSHR RAX
+MUL
 JB :DOT
 CALL :LOAD_HASHTAG
 JMP :CONTINUE
 :DOT
-CALL :LOAD_DOT // Запись хештега
+CALL :LOAD_DOT        // Запись хештега
 :CONTINUE
 CALL :INCREMENT_RBX
-JMP :LOOP       // Новая итерация цикла
-:DISTANCE 
+JMP :LOOP             // Новая итерация цикла
+:Q_EQUATION 
 PUSHR RCX
 PUSHR RGX
 SUB
 PUSHR RCX
 PUSHR RGX
 SUB
+MUL
+PUSH 4
 MUL
 PUSHR RDX
 PUSHR RFX
@@ -55,10 +61,9 @@ PUSHR RFX
 SUB
 MUL
 ADD
-SQRT
 POPR REX
 RET
-:INCREMENT_RBX // Увеличивает значение в регистре RBX на 1
+:INCREMENT_RBX         // Увеличивает значение в регистре RBX на 1
 PUSHR RBX
 PUSH 1
 ADD
@@ -73,5 +78,5 @@ PUSH 46
 POPM [RBX]
 RET
 :EXIT
-DRAW 0        // Вывод памяти
+DRAW 0                 // Вывод памяти
 HLT

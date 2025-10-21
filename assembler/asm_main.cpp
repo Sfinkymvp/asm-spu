@@ -22,7 +22,6 @@ int main(int argc, const char** argv)
     RETURN_IF_ERROR(err, &asmdata);
 
     err = assembler(&asmdata);
-    printf("%d\n", asmdata.ip);
     RETURN_IF_ERROR(err, &asmdata);
 
     err = writeByteCodeToFile(&asmdata);
