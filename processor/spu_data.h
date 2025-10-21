@@ -14,7 +14,7 @@ const size_t CMD_TABLE_SIZE = (size_t)CMD_DRAW + 1;
 
 
 const size_t DRAW_WIDTH = 80;
-const size_t DRAW_HEIGHT = 25;
+const size_t DRAW_HEIGHT = 32;
 const size_t RAM_SIZE = DRAW_WIDTH * DRAW_HEIGHT;
 
 

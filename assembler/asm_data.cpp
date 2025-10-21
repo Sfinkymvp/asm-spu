@@ -90,7 +90,6 @@ void printError(ErrorCode err)
 ErrorCode initializeBuffer(AssemblyData* asmdata)
 {
     assert(asmdata != NULL);
-    assert(asmdata->args.input_file != NULL);
 
     FILE* in = fopen(asmdata->args.input_file, "r");
     if (in == NULL)
@@ -127,8 +126,7 @@ ErrorCode initializeByteCode(AssemblyData* asmdata, size_t start_capacity)
 
 ErrorCode expandByteCode(AssemblyData* asmdata)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->code.data != NULL);
+    ASSERT_ASM(asmdata);
 
     void* temp = realloc(asmdata->code.data, asmdata->code.capacity * 2 * sizeof(int));
     if (temp == NULL)
@@ -160,8 +158,7 @@ ErrorCode initializeLabelTables(AssemblyData* asmdata, size_t start_capacity)
 
 ErrorCode ExpandLabelTable(AssemblyData* asmdata)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->label_table.labels != NULL);
+    ASSERT_ASM(asmdata);
 
     printf("size of label table: %zu\n", asmdata->label_table.capacity);
     void* temp = realloc(asmdata->label_table.labels, 2 * asmdata->label_table.capacity * sizeof(Label));

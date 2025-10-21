@@ -22,6 +22,14 @@ const int WAIT_LABEL = -1;
     } while (0)
 
 
+#define ASSERT_ASM(asmdata)                     \
+    assert(asmdata != NULL);                    \
+    assert(asmdata->buffer != NULL);            \
+    assert(asmdata->code.data != NULL);         \
+    assert(asmdata->label_table.labels != NULL);\
+    assert(asmdata->fixups.labels != NULL);
+
+
 typedef enum {
     ERR_OK = 0,
     ERR_FILE_OPEN,
@@ -112,11 +120,11 @@ void initializeErrorMessages();
 void printError(ErrorCode err);
 
 
-#define REPORT_AND_RETURN(err, data_ptr)        \
+#define RETURN_IF_ERROR(err, asmdata)           \
     do {                                        \
         if ((err) != ERR_OK) {                  \
             printError(err);                    \
-            asmDtor(data_ptr);                  \
+            asmDtor(asmdata);                   \
             return (err);                       \
         }                                       \
     } while (0)                                 

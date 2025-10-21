@@ -18,16 +18,16 @@ int main(int argc, const char** argv)
     Processor spu = {};
 
     ErrorCode err = spuCtor(&spu);
-    REPORT_AND_RETURN(err, &spu);
+    RETURN_IF_ERROR(err, &spu);
 
     err = parseArguments(&spu, argc, argv);
-    REPORT_AND_RETURN(err, &spu);
+    RETURN_IF_ERROR(err, &spu);
 
     err = loadByteCode(&spu);
-    REPORT_AND_RETURN(err, &spu);
+    RETURN_IF_ERROR(err, &spu);
 
     err = runProcessor(&spu);
-    REPORT_AND_RETURN(err, &spu);
+    RETURN_IF_ERROR(err, &spu);
 
     spuDtor(&spu);
     return 0;

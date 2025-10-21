@@ -9,12 +9,10 @@ extern const char* error_messages[];
 
 
 #define ASSERT_SPU(spu)                              \
-    do {                                             \
     assert(spu != NULL);                             \
     assert(spu->stack.data != NULL);                 \
     assert(spu->call_stack.data != NULL);            \
-    assert(spu->bytecode.data != NULL);              \
-    } while (0)
+    assert(spu->bytecode.data != NULL);
 
 
 #ifdef DEBUG
@@ -40,10 +38,10 @@ extern const char* error_messages[];
 #endif // DEBUG 
 
 
-#define REPORT_AND_RETURN(_err, spu)                 \
+#define RETURN_IF_ERROR(_err, spu)                   \
     do {                                             \
         if ((_err) != ERR_OK) {                      \
-            spuDtor(spu);                           \
+            spuDtor(spu);                            \
             printError(_err);                        \
             return (_err);                           \
         }                                            \

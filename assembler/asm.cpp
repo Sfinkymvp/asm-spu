@@ -12,10 +12,7 @@
 
 ErrorCode assembler(AssemblyData* asmdata)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->buffer != NULL);
-    assert(asmdata->label_table.labels != NULL);
-    assert(asmdata->fixups.labels != NULL);
+    ASSERT_ASM(asmdata);
 
     CHECK_OK(processInstructions(asmdata));
     CHECK_OK(processLabelFixups(asmdata));
@@ -26,11 +23,7 @@ ErrorCode assembler(AssemblyData* asmdata)
 
 ErrorCode processInstructions(AssemblyData* asmdata)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->buffer != NULL);
-    assert(asmdata->code.data != NULL);
-    assert(asmdata->label_table.labels != NULL);
-    assert(asmdata->fixups.labels != NULL);
+    ASSERT_ASM(asmdata);
 
     char* token = strtok(asmdata->buffer, "\n");
     char* last_token = NULL;
@@ -41,8 +34,8 @@ ErrorCode processInstructions(AssemblyData* asmdata)
                 break;
 
         last_token = token;
-        token = strtok(NULL, "\n");
         err = assembleInstruction(asmdata, last_token);
+        token = strtok(NULL, "\n");
     }
 
     return err;
@@ -51,11 +44,7 @@ ErrorCode processInstructions(AssemblyData* asmdata)
 
 ErrorCode assembleInstruction(AssemblyData* asmdata, char* line)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->buffer != NULL);
-    assert(asmdata->code.data != NULL);
-    assert(asmdata->label_table.labels != NULL);
-    assert(asmdata->fixups.labels != NULL);
+    ASSERT_ASM(asmdata);
 
     char instruction[NAME_MAX_LEN] = "";
     if (sscanf(line, "%s", instruction) != 1)
@@ -82,8 +71,8 @@ ErrorCode assembleInstruction(AssemblyData* asmdata, char* line)
 
 ErrorCode getWord(char** dest, char* line, size_t word_index)
 {
-    assert(line != NULL);
     assert(dest != NULL);
+    assert(line != NULL);
 
     while (*line == ' ' || *line == '\t')
         line++;
@@ -91,14 +80,12 @@ ErrorCode getWord(char** dest, char* line, size_t word_index)
     for (size_t index = 1; index < word_index; index++) {
         line = strpbrk(line, " \t");
         if (line == NULL) {
-            printf("null line\n");
             return ERR_INVALID_OPERAND;
         }
 
         while (*line == ' ' || *line == '\t')
             line++;
         if (*line == '\0') {
-            printf("\\0 is line\n");
             return ERR_INVALID_OPERAND;
         }
     }

@@ -19,18 +19,15 @@ int main(int argc, const char** argv)
     ErrorCode err = ERR_OK;
 
     err = asmCtor(&asmdata, argc, argv);
-    REPORT_AND_RETURN(err, &asmdata);
+    RETURN_IF_ERROR(err, &asmdata);
 
-    printf("MEOWONE\n");
     err = assembler(&asmdata);
-    REPORT_AND_RETURN(err, &asmdata);
+    printf("%d\n", asmdata.ip);
+    RETURN_IF_ERROR(err, &asmdata);
 
-    printf("MEOWTWO\n");
     err = writeByteCodeToFile(&asmdata);
-    REPORT_AND_RETURN(err, &asmdata);
+    RETURN_IF_ERROR(err, &asmdata);
   
-    printf("MEOWFINAL\n");
-
     asmDtor(&asmdata);
     return 0;
 }

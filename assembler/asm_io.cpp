@@ -23,8 +23,7 @@ size_t getFileSize(const char* input_filename)
 
 ErrorCode writeByteCodeToFile(const AssemblyData* asmdata)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->args.output_file != NULL);
+    ASSERT_ASM(asmdata);
 
     FILE* out = fopen(asmdata->args.output_file, "w");
     if (out == NULL)

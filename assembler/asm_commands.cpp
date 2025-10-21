@@ -11,8 +11,7 @@
 
 ErrorCode asmCmdNoArgs(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->code.data != NULL);
+    ASSERT_ASM(asmdata);
     assert(cmd_info != NULL);
     assert(line != NULL);
 
@@ -24,8 +23,7 @@ ErrorCode asmCmdNoArgs(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 
 ErrorCode asmCmdOneArg(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->code.data != NULL);
+    ASSERT_ASM(asmdata);
     assert(cmd_info != NULL);
     assert(line != NULL);
 
@@ -42,8 +40,7 @@ ErrorCode asmCmdOneArg(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 
 ErrorCode asmCmdJump(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->code.data != NULL);
+    ASSERT_ASM(asmdata);
     assert(cmd_info != NULL);
     assert(line != NULL);
 
@@ -70,9 +67,8 @@ ErrorCode asmCmdJump(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 
 ErrorCode asmCmdRegCommon(AssemblyData* asmdata, RegisterInfo* reg_table, CommandInfo* cmd_info, char* line)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->code.data != NULL);
-    assert(regs != NULL);
+    ASSERT_ASM(asmdata);
+    assert(reg_table != NULL);
     assert(cmd_info != NULL);
     assert(line != NULL);
 
@@ -88,8 +84,7 @@ ErrorCode asmCmdRegCommon(AssemblyData* asmdata, RegisterInfo* reg_table, Comman
 
 ErrorCode asmCmdRegs(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->code.data != NULL);
+    ASSERT_ASM(asmdata);
     assert(cmd_info != NULL);
     assert(line != NULL);
 
@@ -99,8 +94,7 @@ ErrorCode asmCmdRegs(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 
 ErrorCode asmCmdMemoryRegs(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->code.data != NULL);
+    ASSERT_ASM(asmdata);
     assert(cmd_info != NULL);
     assert(line != NULL);
 

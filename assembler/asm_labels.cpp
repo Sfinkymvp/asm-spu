@@ -10,8 +10,7 @@
 
 ErrorCode defineLabel(AssemblyData* asmdata, char* line)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->label_table.labels != NULL);
+    ASSERT_ASM(asmdata);
     assert(line != NULL);
 
     if (asmdata->label_table.count == asmdata->label_table.capacity)
@@ -32,10 +31,7 @@ ErrorCode defineLabel(AssemblyData* asmdata, char* line)
 
 ErrorCode processLabelFixups(AssemblyData* asmdata)
 {
-    assert(asmdata != NULL);
-    assert(asmdata->code.data != NULL);
-    assert(asmdata->label_table.labels != NULL);
-    assert(asmdata->fixups.labels != NULL);
+    ASSERT_ASM(asmdata);
 
     for (size_t index = 0; index < asmdata->fixups.count; index++) {
         int address = getLabelAddress(&asmdata->label_table,
