@@ -21,6 +21,9 @@ ErrorCode runProcessor(Processor* spu)
 
     spu->ip = 0;
     while (spu->ip++ < (int)spu->bytecode.capacity) {
+        int index = spu->bytecode.data[spu->ip - 1];
+        if (index >= CMD_TABLE_SIZE || index < 0)
+            return ERR_INVALID_INSTRUCTION;
         err = commands[spu->bytecode.data[spu->ip - 1]](spu);
         if (err == ERR_EXIT)
             return ERR_OK;
@@ -60,7 +63,11 @@ ErrorCode spuCmdArithmetic(Processor* spu)
     CHECK_OK(spu, stackPop(&spu->stack, &value2));
     CHECK_OK(spu, stackPop(&spu->stack, &value1));
 
-    return spuExecArithmetic(spu, value1, value2, (Instruction)spu->bytecode.data[spu->ip - 1]);
+    
+    int instruction = spu->bytecode.data[spu->ip - 1];
+    if (instruction >= CMD_TABLE_SIZE)
+        return ERR_INVALID_INSTRUCTION;
+    return spuExecArithmetic(spu, value1, value2, (Instruction)instruction);
 }
 
 
@@ -128,7 +135,10 @@ ErrorCode spuCmdJump(Processor* spu)
         CHECK_OK(spu, stackPop(&spu->stack, &value2));
         CHECK_OK(spu, stackPop(&spu->stack, &value1));
 
-        if (!spuJumpCondition(value1, value2, (Instruction)spu->bytecode.data[spu->ip - 1])) {
+        int instruction = spu->bytecode.data[spu->ip - 1];
+        if (instruction >= CMD_TABLE_SIZE)
+            return ERR_INVALID_INSTRUCTION;
+        if (!spuJumpCondition(value1, value2, (Instruction)instruction)) {
             spu->ip++;
             return ERR_OK;
         }
@@ -221,7 +231,10 @@ ErrorCode spuCmdPopm(Processor* spu)
 {
     ASSERT_SPU(spu);
 
-    int index = spu->registers[spu->bytecode.data[spu->ip++]];
+    int register_index = spu->bytecode.data[spu->ip++];
+    if (register_index >= REGISTER_COUNT || register_index < 0)
+        return ERR_INVALID_REGISTER;
+    int index = spu->registers[register_index];
     if (index >= (int)RAM_SIZE || index < 0)
         return ERR_INVALID_MEMORY_ACCESS;
 

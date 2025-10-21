@@ -56,9 +56,10 @@ ErrorCode assembleInstruction(AssemblyData* asmdata, char* line)
         return defineLabel(asmdata, word + 1);
     }
 
+    size_t instruction_hash = hash_djb2((const unsigned char*)instruction);
     ErrorCode err = ERR_OK;
     for (size_t index = 0; index < COMMAND_COUNT && err == ERR_OK; index++) {
-        if (commands[index].hash == hash_djb2((const unsigned char*)instruction) &&
+        if (commands[index].hash == instruction_hash &&
             strcmp(commands[index].name, instruction) == 0) {
             err = commands[index].handler(asmdata, &commands[index], line);
             break;

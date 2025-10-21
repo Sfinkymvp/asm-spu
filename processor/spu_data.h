@@ -10,7 +10,6 @@
 
 
 const size_t START_STACK_CAPACITY = 8;
-const size_t CMD_TABLE_SIZE = (size_t)CMD_DRAW + 1;
 
 
 const size_t DRAW_WIDTH = 80;

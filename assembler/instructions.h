@@ -32,6 +32,9 @@ typedef enum {
 } Instruction;
 
 
+const int CMD_TABLE_SIZE = CMD_DRAW + 1;
+
+
 typedef enum {
     RESERVED = 0,
     RAX,
@@ -44,7 +47,7 @@ typedef enum {
 } Register;
 
 
-const size_t REGISTER_COUNT = 8;
+const int REGISTER_COUNT = 8;
 
 
 #endif // _INSTRUCTIONS_H_

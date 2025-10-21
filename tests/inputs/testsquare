@@ -60,7 +60,7 @@ PUSH 2
 PUSHR RAX
 MUL
 DIV
-POPR RCX
+POPR REX
 PUSHR RDX
 PUSH 0
 JNE :TWO_ROOTS       // Если D = 0, то ищется 1 корень, иначе 2
@@ -79,11 +79,11 @@ PUSH 2
 PUSHR RAX
 MUL
 DIV
-POPR RDX
+POPR RCX
 PUSHR RCX
-PUSHR RDX
+PUSHR REX
 JB :BELOW             // Корни печатаются в порядке возрастания и число 1 (количество корней)
-PUSHR RDX
+PUSHR REX
 OUT
 PUSHR RCX
 OUT     
@@ -93,7 +93,7 @@ HLT
 :BELOW
 PUSHR RCX
 OUT
-PUSHR RDX
+PUSHR REX
 OUT
 PUSH 2
 OUT
