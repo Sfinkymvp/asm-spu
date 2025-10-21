@@ -8,24 +8,9 @@
 #include "asm_commands.h"
 
 
-const char* error_messages[] = {
-    "This message should not be printed",
-    "This message should not be printed",
-    "Failed to open file",
-    "Failed to read data from file",
-    "Failed to write data to file",
-    "Failed to close file",
-    "Unknown command line argument",
-    "Unknown processor instruction",
-    "Unknown register name",
-    "Unknown label",
-    "Failed to allocate memory"
-};
-
-
 CommandInfo commands[] = {
     {CMD_HLT,   "HLT",   0, asmCmdNoArgs},
-    {CMD_PUSH,  "PUSH",  0, asmCmdPush},
+    {CMD_PUSH,  "PUSH",  0, asmCmdOneArg},
     {CMD_ADD,   "ADD",   0, asmCmdNoArgs},
     {CMD_SUB,   "SUB",   0, asmCmdNoArgs},
     {CMD_DIV,   "DIV",   0, asmCmdNoArgs},
@@ -45,7 +30,8 @@ CommandInfo commands[] = {
     {CMD_PUSHR, "PUSHR", 0, asmCmdRegs},
     {CMD_POPR,  "POPR",  0, asmCmdRegs},
     {CMD_PUSHM, "PUSHM", 0, asmCmdMemoryRegs},
-    {CMD_POPM,  "POPM",  0, asmCmdMemoryRegs}
+    {CMD_POPM,  "POPM",  0, asmCmdMemoryRegs},
+    {CMD_DRAW,  "DRAW",  0, asmCmdOneArg}
 };
 
 
@@ -74,6 +60,31 @@ RegisterInfo memory_regs[] = {
     {RFX,      "[RFX]",      0},
     {RGX,      "[RGX]",      0}
 };
+
+
+const char* error_messages[ERROR_TABLE_SIZE] = {};
+
+
+void initializeErrorMessages()
+{
+    error_messages[ERR_OK]                   = "No errors";
+    error_messages[ERR_FILE_OPEN]            = "Failed to open source file";
+    error_messages[ERR_FILE_READ]            = "Failed to read from source file";
+    error_messages[ERR_FILE_WRITE]           = "Failed to write output file";
+    error_messages[ERR_FILE_CLOSE]           = "Failed to close file";
+    error_messages[ERR_INVALID_CMD_ARGUMENT] = "Invalid command-line argument";
+    error_messages[ERR_INVALID_INSTRUCTION]  = "Unknown or invalid instruction name";
+    error_messages[ERR_INVALID_REGISTER]     = "Invalid register name or index";
+    error_messages[ERR_INVALID_LABEL]        = "Undefined or invalid label reference";
+    error_messages[ERR_INVALID_OPERAND]      = "Invalid or unexpected operand format";
+    error_messages[ERR_OUT_OF_MEMORY]        = "Memory allocation failed (out of memory)";
+}
+
+
+void printError(ErrorCode err)
+{
+    fprintf(stderr, "%s\n", error_messages[err]);
+}
 
 
 ErrorCode initializeBuffer(AssemblyData* asmdata)
@@ -168,10 +179,10 @@ ErrorCode asmCtor(AssemblyData* asmdata, int argc, const char** argv)
     assert(asmdata != NULL);
     assert(argv != NULL);
 
-    TRY_OR_RETURN(parseArguments(asmdata, argc, argv));
-    TRY_OR_RETURN(initializeBuffer(asmdata));
-    TRY_OR_RETURN(initializeByteCode(asmdata, START_CAPACITY));
-    TRY_OR_RETURN(initializeLabelTables(asmdata, START_CAPACITY));
+    CHECK_OK(parseArguments(asmdata, argc, argv));
+    CHECK_OK(initializeBuffer(asmdata));
+    CHECK_OK(initializeByteCode(asmdata, START_CAPACITY));
+    CHECK_OK(initializeLabelTables(asmdata, START_CAPACITY));
 
     return ERR_OK;
 }

@@ -47,12 +47,6 @@ ErrorCode writeByteCodeToFile(const AssemblyData* asmdata)
 }
 
 
-void printError(ErrorCode code)
-{
-    fprintf(stderr, "%s\n", error_messages[code]);
-}
-
-
 ErrorCode parseArguments(AssemblyData* asmdata, int argc, const char** argv)
 {
     assert(asmdata != NULL);

@@ -14,17 +14,7 @@ const size_t NAME_MAX_LEN = 30;
 const int WAIT_LABEL = -1;
 
 
-#define REPORT_AND_RETURN(err, data_ptr)        \
-    do {                                        \
-        if ((err) != ERR_OK) {                  \
-            printError(err);                    \
-            asmDtor(data_ptr);            \
-            return (err);                       \
-        }                                       \
-    } while (0)                                 
-
-
-#define TRY_OR_RETURN(function_call)            \
+#define CHECK_OK(function_call)                 \
     do {                                        \
         ErrorCode _err = (function_call);       \
         if (_err != ERR_OK)                     \
@@ -34,7 +24,6 @@ const int WAIT_LABEL = -1;
 
 typedef enum {
     ERR_OK = 0,
-    ERR_NOP,
     ERR_FILE_OPEN,
     ERR_FILE_READ,
     ERR_FILE_WRITE,
@@ -46,6 +35,9 @@ typedef enum {
     ERR_INVALID_OPERAND,
     ERR_OUT_OF_MEMORY
 } ErrorCode;
+
+
+const size_t ERROR_TABLE_SIZE = (size_t)ERR_OUT_OF_MEMORY + 1;
 
 
 typedef struct {
@@ -112,6 +104,22 @@ extern CommandInfo commands[];
 extern const size_t COMMAND_COUNT;
 extern RegisterInfo regs[];
 extern RegisterInfo memory_regs[];
+
+
+void initializeErrorMessages();
+
+
+void printError(ErrorCode err);
+
+
+#define REPORT_AND_RETURN(err, data_ptr)        \
+    do {                                        \
+        if ((err) != ERR_OK) {                  \
+            printError(err);                    \
+            asmDtor(data_ptr);                  \
+            return (err);                       \
+        }                                       \
+    } while (0)                                 
 
 
 ErrorCode initializeBuffer(AssemblyData* asmdata);

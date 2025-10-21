@@ -3,15 +3,16 @@
 #include <string.h>
 #include <assert.h>
 
+
 #include "spu_input.h"
 
 
-ErrorCode loadByteCode(Processor* spu, const char* input_filename)
+ErrorCode loadByteCode(Processor* spu)
 {
     assert(spu != NULL);
-    assert(input_filename != NULL);
+    assert(spu->args.input_file != NULL);
 
-    FILE* in = fopen(input_filename, "r");
+    FILE* in = fopen(spu->args.input_file, "r");
     if (in == NULL)
         return ERR_FILE_OPEN;
 
@@ -26,7 +27,7 @@ ErrorCode loadByteCode(Processor* spu, const char* input_filename)
     if (err != ERR_OK)
         return ERR_OUT_OF_MEMORY;
 
-    err = readInstructions(spu, in);
+    err = readByteCode(spu, in);
     if (fclose(in) != 0)
         return ERR_FILE_CLOSE;
 
@@ -46,7 +47,7 @@ ErrorCode createBuffer(Processor* spu)
 }
 
 
-ErrorCode readInstructions(Processor* spu, FILE* in)
+ErrorCode readByteCode(Processor* spu, FILE* in)
 {
     assert(spu != NULL);
     assert(in != NULL);
@@ -68,10 +69,10 @@ ErrorCode parseArguments(Processor* spu, int argc, const char** argv)
     assert(spu != NULL);
     assert(argv != NULL);
 
-    int index = 1;
-    for (; index < argc; index++) {
-        if (strcmp(argv[index], "-i") == 0)
-            parseInputFile(argc, argv, spu, &index);
+    CmdArgs args = {argc, argv, 1};
+    for (; args.pos < args.count; args.pos++) {
+        if (strcmp(args.values[args.pos], "-i") == 0)
+            parseInputFile(spu, &args);
         else
             return ERR_INVALID_CMD_ARGUMENT;
     }
@@ -80,12 +81,12 @@ ErrorCode parseArguments(Processor* spu, int argc, const char** argv)
 }
 
 
-void parseInputFile(int argc, const char** argv, Processor* spu, int* index)
+void parseInputFile(Processor* spu, CmdArgs* args)
 {
-    assert(argv != NULL);
     assert(spu != NULL);
-    assert(index != NULL);
+    assert(args != NULL);
+    assert(args->values != NULL);
 
-    if (*index < argc - 1)
-        spu->args.input_file = argv[++(*index)];
+    if (args->pos < args->count - 1)
+        spu->args.input_file = args->values[++args->pos];
 }

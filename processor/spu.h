@@ -53,5 +53,8 @@ ErrorCode spuCmdPushm(Processor* cpu);
 ErrorCode spuCmdPopm(Processor* cpu);
 
 
+ErrorCode spuCmdDraw(Processor* cpu);
+
+
 #endif // _SPU_H_
 

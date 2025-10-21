@@ -27,7 +27,8 @@ typedef enum {
     CMD_PUSHR =  31,
     CMD_POPR  =  32,
     CMD_PUSHM =  33,
-    CMD_POPM  =  34
+    CMD_POPM  =  34,
+    CMD_DRAW  =  41,
 } Instruction;
 
 

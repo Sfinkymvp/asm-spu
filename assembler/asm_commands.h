@@ -8,7 +8,7 @@
 ErrorCode asmCmdNoArgs(AssemblyData* asmdata, CommandInfo* cmd_info, char* line);
 
 
-ErrorCode asmCmdPush(AssemblyData* asmdata, CommandInfo* cmd_info, char* line);
+ErrorCode asmCmdOneArg(AssemblyData* asmdata, CommandInfo* cmd_info, char* line);
 
 
 ErrorCode asmCmdJump(AssemblyData* asmdata, CommandInfo* cmd_info, char* line);

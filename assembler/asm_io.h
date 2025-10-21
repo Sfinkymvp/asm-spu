@@ -11,9 +11,6 @@ size_t getFileSize(const char* input_filename);
 ErrorCode writeByteCodeToFile(const AssemblyData* asmdata);
 
 
-void printError(ErrorCode code);
-
-
 ErrorCode parseArguments(AssemblyData* asmdata, int argc, const char** argv);
 
 

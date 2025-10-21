@@ -22,7 +22,7 @@ ErrorCode asmCmdNoArgs(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 }
 
 
-ErrorCode asmCmdPush(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
+ErrorCode asmCmdOneArg(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 {
     assert(asmdata != NULL);
     assert(asmdata->code.data != NULL);
@@ -47,9 +47,8 @@ ErrorCode asmCmdJump(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
     assert(cmd_info != NULL);
     assert(line != NULL);
 
-
     Label label = {NULL, 0, 0};
-    TRY_OR_RETURN(getWord(&label.name, line, 2));
+    CHECK_OK(getWord(&label.name, line, 2));
     label.name += 1;
 
     assert(label.name != NULL);
@@ -78,7 +77,7 @@ ErrorCode asmCmdRegCommon(AssemblyData* asmdata, RegisterInfo* reg_table, Comman
     assert(line != NULL);
 
     Register reg = RESERVED;
-    TRY_OR_RETURN(getRegister(reg_table, &reg, line));
+    CHECK_OK(getRegister(reg_table, &reg, line));
 
     asmdata->code.data[asmdata->ip++] = cmd_info->code;
     asmdata->code.data[asmdata->ip++] = reg;

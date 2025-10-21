@@ -13,6 +13,7 @@
 int main(int argc, const char** argv)
 {
     initializeHashes();
+    initializeErrorMessages();
 
     AssemblyData asmdata = {};
     ErrorCode err = ERR_OK;

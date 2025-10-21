@@ -17,8 +17,8 @@ ErrorCode assembler(AssemblyData* asmdata)
     assert(asmdata->label_table.labels != NULL);
     assert(asmdata->fixups.labels != NULL);
 
-    TRY_OR_RETURN(processInstructions(asmdata));
-    TRY_OR_RETURN(processLabelFixups(asmdata));
+    CHECK_OK(processInstructions(asmdata));
+    CHECK_OK(processLabelFixups(asmdata));
 
     return ERR_OK;
 }
@@ -63,7 +63,7 @@ ErrorCode assembleInstruction(AssemblyData* asmdata, char* line)
 
     if (instruction[0] == ':') {
         char* word = NULL;
-        TRY_OR_RETURN(getWord(&word, line, 1));
+        CHECK_OK(getWord(&word, line, 1));
         return defineLabel(asmdata, word + 1);
     }
 
@@ -119,7 +119,7 @@ ErrorCode getRegister(RegisterInfo* reg_table, Register* reg, char* line)
     assert(line != NULL);
 
     char* reg_name = NULL;
-    TRY_OR_RETURN(getWord(&reg_name, line, 2));
+    CHECK_OK(getWord(&reg_name, line, 2));
 
     assert(reg_name != NULL);
 

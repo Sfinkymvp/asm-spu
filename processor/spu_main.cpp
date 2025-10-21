@@ -7,34 +7,28 @@
 #include "spu_data.h"
 #include "spu.h"
 #include "spu_input.h"
-#include "../../secure_stack/stack.h"
+#include "spu_error.h"
 
 
 int main(int argc, const char** argv)
 {
     initializeCommands();
+    initializeErrorMessages();
 
     Processor spu = {};
 
-    stackCtor(&spu.stack, START_STACK_CAPACITY);
-    stackCtor(&spu.call_stack, START_STACK_CAPACITY);
-    printf("after ctor\n");
+    ErrorCode err = spuCtor(&spu);
+    REPORT_AND_RETURN(err, &spu);
 
-    parseArguments(&spu, argc, argv);
-    assert(spu.args.input_file != NULL);
-    printf("after parse\n");
+    err = parseArguments(&spu, argc, argv);
+    REPORT_AND_RETURN(err, &spu);
 
-    loadByteCode(&spu, spu.args.input_file);
-    printf("after load code\n");
+    err = loadByteCode(&spu);
+    REPORT_AND_RETURN(err, &spu);
 
-    printf("Processor exit code: %d\n", (int)runProcessor(&spu));
-    printf("ip: %d\n", spu.ip);
-    printf("after execute\n");    
+    err = runProcessor(&spu);
+    REPORT_AND_RETURN(err, &spu);
 
-    stackDtor(&spu.stack);
-    stackDtor(&spu.call_stack);
-    free(spu.bytecode.data);
-
-    printf("program completion\n");
+    spuDtor(&spu);
     return 0;
 }

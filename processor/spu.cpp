@@ -2,23 +2,26 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
+#include <unistd.h>
 
 
 #include "spu.h"
 #include "spu_data.h"
+#include "spu_error.h"
 
 
 ErrorCode runProcessor(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
-    ErrorCode err = ERR_OK;
+    ErrorCode err = spuVerify(spu);
+
+    if (err != ERR_OK)
+        return err;
+
     spu->ip = 0;
     while (spu->ip++ < (int)spu->bytecode.capacity) {
-        err = commands[spu->bytecode.data[spu->ip - 1]].handler(spu);
+        err = commands[spu->bytecode.data[spu->ip - 1]](spu);
         if (err == ERR_EXIT)
             return ERR_OK;
         if (err != ERR_OK)
@@ -31,10 +34,7 @@ ErrorCode runProcessor(Processor* spu)
 
 ErrorCode spuCmdHlt(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
     return ERR_EXIT;
 }
@@ -42,13 +42,10 @@ ErrorCode spuCmdHlt(Processor* spu)
 
 ErrorCode spuCmdPush(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
     int value = spu->bytecode.data[spu->ip++];
-    STACK_ERR(stackPush(&spu->stack, value));
+    CHECK_OK(spu, stackPush(&spu->stack, value));
 
     return ERR_OK;
 }
@@ -56,15 +53,12 @@ ErrorCode spuCmdPush(Processor* spu)
 
 ErrorCode spuCmdArithmetic(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
     int value1 = 0;
     int value2 = 0;
-    stackPop(&spu->stack, &value2);
-    stackPop(&spu->stack, &value1);
+    CHECK_OK(spu, stackPop(&spu->stack, &value2));
+    CHECK_OK(spu, stackPop(&spu->stack, &value1));
 
     return spuExecArithmetic(spu, value1, value2, (Instruction)spu->bytecode.data[spu->ip - 1]);
 }
@@ -72,17 +66,14 @@ ErrorCode spuCmdArithmetic(Processor* spu)
 
 ErrorCode spuExecArithmetic(Processor* spu, int value1, int value2, Instruction instruction)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
     switch (instruction) {
-        case CMD_ADD: STACK_ERR(stackPush(&spu->stack, value1 + value2)); break;
-        case CMD_SUB: STACK_ERR(stackPush(&spu->stack, value1 - value2)); break;
-        case CMD_MUL: STACK_ERR(stackPush(&spu->stack, value1 * value2)); break;
-        case CMD_DIV: STACK_ERR(stackPush(&spu->stack, value1 / value2)); break;
-        default:      printf("aboba\n"); return ERR_INVALID_INSTRUCTION;
+        case CMD_ADD: CHECK_OK(spu, stackPush(&spu->stack, value1 + value2)); break;
+        case CMD_SUB: CHECK_OK(spu, stackPush(&spu->stack, value1 - value2)); break;
+        case CMD_MUL: CHECK_OK(spu, stackPush(&spu->stack, value1 * value2)); break;
+        case CMD_DIV: CHECK_OK(spu, stackPush(&spu->stack, value1 / value2)); break;
+        default:      return ERR_INVALID_INSTRUCTION;
     }
 
     return ERR_OK;
@@ -91,14 +82,11 @@ ErrorCode spuExecArithmetic(Processor* spu, int value1, int value2, Instruction 
 
 ErrorCode spuCmdSqrt(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
     int value = 0;
-    STACK_ERR(stackPop(&spu->stack, &value));
-    STACK_ERR(stackPush(&spu->stack, (int)sqrt(value)));
+    CHECK_OK(spu, stackPop(&spu->stack, &value));
+    CHECK_OK(spu, stackPush(&spu->stack, (int)sqrt(value)));
 
     return ERR_OK;
 }
@@ -106,30 +94,24 @@ ErrorCode spuCmdSqrt(Processor* spu)
 
 ErrorCode spuCmdIn(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
     int value = 0; 
-    printf("Enter number:\n");
+    printf("Enter number: ");
     if (scanf("%d", &value) != 1)
-        return ERR_INVALID_OPERATION;
+        return ERR_INVALID_ENTER;
 
-    STACK_ERR(stackPush(&spu->stack, value));
+    CHECK_OK(spu, stackPush(&spu->stack, value));
     return ERR_OK;
 }
 
 
 ErrorCode spuCmdOut(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
     int value = 0;
-    STACK_ERR(stackPop(&spu->stack, &value));
+    CHECK_OK(spu, stackPop(&spu->stack, &value));
 
     printf("OUT: %d\n", value);
     return ERR_OK;
@@ -138,16 +120,14 @@ ErrorCode spuCmdOut(Processor* spu)
 
 ErrorCode spuCmdJump(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
     if (spu->bytecode.data[spu->ip - 1] != CMD_JMP) {
         int value1 = 0;
         int value2 = 0;
-        stackPop(&spu->stack, &value2);
-        stackPop(&spu->stack, &value1);
+        CHECK_OK(spu, stackPop(&spu->stack, &value2));
+        CHECK_OK(spu, stackPop(&spu->stack, &value1));
+
         if (!spuJumpCondition(value1, value2, (Instruction)spu->bytecode.data[spu->ip - 1])) {
             spu->ip++;
             return ERR_OK;
@@ -175,12 +155,9 @@ bool spuJumpCondition(int value1, int value2, Instruction instruction)
 
 ErrorCode spuCmdCall(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
-    STACK_ERR(stackPush(&spu->call_stack, spu->ip + 1));
+    CHECK_OK(spu, stackPush(&spu->call_stack, spu->ip + 1));
     spu->ip = (size_t)spu->bytecode.data[spu->ip];
 
     return ERR_OK;
@@ -189,13 +166,10 @@ ErrorCode spuCmdCall(Processor* spu)
 
 ErrorCode spuCmdRet(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
     int new_index = 0;
-    STACK_ERR(stackPop(&spu->call_stack, &new_index));
+    CHECK_OK(spu, stackPop(&spu->call_stack, &new_index));
     spu->ip = new_index;
 
     return ERR_OK;
@@ -204,33 +178,27 @@ ErrorCode spuCmdRet(Processor* spu)
 
 ErrorCode spuCmdPushr(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
     int register_id = spu->bytecode.data[spu->ip++];
     if (register_id >= (int)REGISTER_COUNT || register_id < 0)
         return ERR_INVALID_REGISTER;
 
-    STACK_ERR(stackPush(&spu->stack, spu->registers[register_id]));
+    CHECK_OK(spu, stackPush(&spu->stack, spu->registers[register_id]));
     return ERR_OK;
 }
 
 
 ErrorCode spuCmdPopr(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
     int register_id = spu->bytecode.data[spu->ip++];
     if (register_id >= (int)REGISTER_COUNT || register_id < 0)
         return ERR_INVALID_REGISTER;
 
     int value = 0;
-    STACK_ERR(stackPop(&spu->stack, &value));
+    CHECK_OK(spu, stackPop(&spu->stack, &value));
     spu->registers[register_id] = value;
     return ERR_OK;
 }
@@ -238,31 +206,53 @@ ErrorCode spuCmdPopr(Processor* spu)
 
 ErrorCode spuCmdPushm(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
-    int index = spu->registers[spu->ip++];
+    int index = spu->registers[spu->bytecode.data[spu->ip++]];
     if (index >= (int)RAM_SIZE || index < 0)
         return ERR_INVALID_MEMORY_ACCESS;
 
-    STACK_ERR(stackPush(&spu->stack, spu->ram[index]));
+    CHECK_OK(spu, stackPush(&spu->stack, spu->ram[index]));
     return ERR_OK;
 }
 
 
 ErrorCode spuCmdPopm(Processor* spu)
 {
-    assert(spu != NULL);
-    assert(spu->stack.data != NULL);
-    assert(spu->call_stack.data != NULL);
-    assert(spu->bytecode.data != NULL);
+    ASSERT_SPU(spu);
 
-    int index = spu->registers[spu->ip++];
+    int index = spu->registers[spu->bytecode.data[spu->ip++]];
     if (index >= (int)RAM_SIZE || index < 0)
         return ERR_INVALID_MEMORY_ACCESS;
 
-    STACK_ERR(stackPop(&spu->stack, &spu->ram[index]));
+    CHECK_OK(spu, stackPop(&spu->stack, &spu->ram[index]));
+    return ERR_OK;
+}
+
+
+ErrorCode spuCmdDraw(Processor* spu)
+{
+    ASSERT_SPU(spu);
+
+    static bool first_draw = true;
+
+    unsigned int sleep_time_ms = (unsigned int)spu->bytecode.data[spu->ip++];
+
+    if (sleep_time_ms > 0)
+        usleep(sleep_time_ms * 1000);
+
+    if (first_draw) {
+        system("clear");
+        first_draw = false;
+    } else
+        printf("\033[H");
+
+    for (size_t index = 0; index < RAM_SIZE; index++) {
+        if (index % DRAW_WIDTH == 0 && index != 0)
+            printf("\n");
+        printf("%c", spu->ram[index]);
+    }
+    printf("\n");
+
     return ERR_OK;
 }

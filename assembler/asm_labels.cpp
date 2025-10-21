@@ -15,7 +15,7 @@ ErrorCode defineLabel(AssemblyData* asmdata, char* line)
     assert(line != NULL);
 
     if (asmdata->label_table.count == asmdata->label_table.capacity)
-        TRY_OR_RETURN(ExpandLabelTable(asmdata));
+        CHECK_OK(ExpandLabelTable(asmdata));
 
     Label label = {NULL, 0, 0};
     label.name = line;

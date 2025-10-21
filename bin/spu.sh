@@ -1,4 +1,4 @@
-FLAGS="-ggdb3 -std=c++17 -O0 \
+FLAGS="-ggdb3 -std=c++17 -O0 -D_DEBUG\
 	-Wall -Wextra -Weffc++ -Waggressive-loop-optimizations -Wc++14-compat \
 	-Wmissing-declarations -Wcast-align -Wcast-qual -Wchar-subscripts \
 	-Wconditionally-supported -Wconversion -Wctor-dtor-privacy \
@@ -14,10 +14,10 @@ FLAGS="-ggdb3 -std=c++17 -O0 \
 	-Wno-narrowing -Wno-old-style-cast -Wno-varargs \
     -fcheck-new -fsized-deallocation -fstack-protector \
 	-fstrict-overflow -flto-odr-type-merging -fno-omit-frame-pointer \
-	-Wlarger-than=32768 -Wstack-usage=8192 -pie -fPIE -Werror=vla \
+	-Wlarger-than=32768 -pie -fPIE -Werror=vla \
 	-fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr"
 
-FILES="../processor/spu_main.cpp ../processor/spu.cpp ../processor/spu_input.cpp \
+FILES="../processor/spu_main.cpp ../processor/spu.cpp ../processor/spu_input.cpp ../processor/spu_error.cpp \
 ../processor/spu_data.cpp ../../secure_stack/stack.cpp ../../secure_stack/stack_error.cpp"
 
 g++ $FILES $FLAGS -o spu

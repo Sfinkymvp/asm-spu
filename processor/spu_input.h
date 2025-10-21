@@ -5,19 +5,19 @@
 #include "spu_data.h"
 
 
-ErrorCode loadByteCode(Processor* spu, const char* input_filename);
+ErrorCode loadByteCode(Processor* spu);
 
 
 ErrorCode createBuffer(Processor* spu);
 
 
-ErrorCode readInstructions(Processor* spu, FILE* in);
+ErrorCode readByteCode(Processor* spu, FILE* in);
 
 
 ErrorCode parseArguments(Processor* spu, int argc, const char** argv);
 
 
-void parseInputFile(int argc, const char** argv, Processor* spu, int* index);
+void parseInputFile(Processor* spu, CmdArgs* args);
 
 
 #endif // _SPU_INPUT_H_
