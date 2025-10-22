@@ -5,7 +5,10 @@
 #include "spu_data.h"
 
 
-ErrorCode loadByteCode(Processor* spu);
+ErrorCode loadNumericByteCode(Processor* spu);
+
+
+ErrorCode loadBinaryByteCode(Processor* spu);
 
 
 ErrorCode createBuffer(Processor* spu);

@@ -24,7 +24,10 @@ int main(int argc, const char** argv)
     err = assembler(&asmdata);
     RETURN_IF_ERROR(err, &asmdata);
 
-    err = writeByteCodeToFile(&asmdata);
+    if (asmdata.args.is_numeric_output)
+        err = writeNumericByteCode(&asmdata);
+    else
+        err = writeBinaryByteCode(&asmdata);
     RETURN_IF_ERROR(err, &asmdata);
   
     asmDtor(&asmdata);

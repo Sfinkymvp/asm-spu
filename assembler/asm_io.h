@@ -5,10 +5,16 @@
 #include "asm_data.h"
 
 
+ErrorCode initializeBuffer(AssemblyData* asmdata);
+
+
 size_t getFileSize(const char* input_filename);
 
 
-ErrorCode writeByteCodeToFile(const AssemblyData* asmdata);
+ErrorCode writeNumericByteCode(const AssemblyData* asmdata);
+
+
+ErrorCode writeBinaryByteCode(const AssemblyData* asmdata);
 
 
 ErrorCode parseArguments(AssemblyData* asmdata, int argc, const char** argv);

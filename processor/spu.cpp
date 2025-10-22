@@ -15,7 +15,6 @@ ErrorCode runProcessor(Processor* spu)
     ASSERT_SPU(spu);
 
     ErrorCode err = spuVerify(spu);
-
     if (err != ERR_OK)
         return err;
 

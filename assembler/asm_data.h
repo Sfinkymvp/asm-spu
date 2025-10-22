@@ -58,6 +58,7 @@ typedef struct {
 typedef struct {
     const char* input_file;
     const char* output_file;
+    bool is_numeric_output;
 } Arguments;
 
 
@@ -128,9 +129,6 @@ void printError(ErrorCode err);
             return (err);                       \
         }                                       \
     } while (0)                                 
-
-
-ErrorCode initializeBuffer(AssemblyData* asmdata);
 
 
 ErrorCode initializeByteCode(AssemblyData* asmdata, size_t start_capacity);

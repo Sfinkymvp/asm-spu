@@ -45,6 +45,7 @@ typedef struct {
 
 typedef struct {
     const char* input_file;
+    bool is_numeric_input;
 } Arguments;
 
 

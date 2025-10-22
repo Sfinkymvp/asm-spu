@@ -84,30 +84,6 @@ void printError(ErrorCode err)
 }
 
 
-ErrorCode initializeBuffer(AssemblyData* asmdata)
-{
-    assert(asmdata != NULL);
-
-    FILE* in = fopen(asmdata->args.input_file, "r");
-    if (in == NULL)
-        return ERR_FILE_OPEN;
-
-    size_t size = getFileSize(asmdata->args.input_file);
-    asmdata->buffer = (char*)calloc(size, 1);
-    if (asmdata->buffer == NULL)
-        return ERR_OUT_OF_MEMORY;
-
-    if (fread(asmdata->buffer, 1, size - 1, in) < size - 1)
-        return ERR_FILE_READ;
-    asmdata->buffer[size - 1] = '\0';
-
-    if (fclose(in) != 0)
-        return ERR_FILE_CLOSE;
-
-    return ERR_OK;
-}
-
-
 ErrorCode initializeByteCode(AssemblyData* asmdata, size_t start_capacity)
 {
     assert(asmdata != NULL);

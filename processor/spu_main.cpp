@@ -23,7 +23,10 @@ int main(int argc, const char** argv)
     err = parseArguments(&spu, argc, argv);
     RETURN_IF_ERROR(err, &spu);
 
-    err = loadByteCode(&spu);
+    if (spu.args.is_numeric_input)
+        err = loadNumericByteCode(&spu);
+    else
+        err = loadBinaryByteCode(&spu);
     RETURN_IF_ERROR(err, &spu);
 
     err = runProcessor(&spu);
