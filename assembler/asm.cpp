@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <limits.h>
 
 
 #include "asm.h"
 #include "asm_data.h"
 #include "asm_labels.h"
 #include "asm_hash.h"
+#include "asm_utils.h"
 
 
 ErrorCode assembler(AssemblyData* asmdata)
@@ -56,7 +58,7 @@ ErrorCode assembleInstruction(AssemblyData* asmdata, char* line)
         return defineLabel(asmdata, word + 1);
     }
 
-    size_t instruction_hash = hash_djb2((const unsigned char*)instruction);
+    size_t instruction_hash = hashDjb2((const unsigned char*)instruction);
     ErrorCode err = ERR_OK;
     for (size_t index = 0; index < COMMAND_COUNT && err == ERR_OK; index++) {
         if (commands[index].hash == instruction_hash &&
@@ -67,58 +69,4 @@ ErrorCode assembleInstruction(AssemblyData* asmdata, char* line)
     }
 
     return err;
-}
-
-
-ErrorCode getWord(char** dest, char* line, size_t word_index)
-{
-    assert(dest != NULL);
-    assert(line != NULL);
-
-    while (*line == ' ' || *line == '\t')
-        line++;
-
-    for (size_t index = 1; index < word_index; index++) {
-        line = strpbrk(line, " \t");
-        if (line == NULL) {
-            return ERR_INVALID_OPERAND;
-        }
-
-        while (*line == ' ' || *line == '\t')
-            line++;
-        if (*line == '\0') {
-            return ERR_INVALID_OPERAND;
-        }
-    }
-
-    *dest = line;
-    line = strpbrk(line, " \t");
-    if (line != NULL)
-        *line = '\0';
-
-    return ERR_OK;
-}
-
-
-ErrorCode getRegister(RegisterInfo* reg_table, Register* reg, char* line)
-{
-    assert(reg_table != NULL);
-    assert(reg != NULL);
-    assert(line != NULL);
-
-    char* reg_name = NULL;
-    CHECK_OK(getWord(&reg_name, line, 2));
-
-    assert(reg_name != NULL);
-
-    size_t reg_hash = hash_djb2((const unsigned char*)reg_name);
-    for (size_t index = 0; index < REGISTER_COUNT; index++) {
-        if (reg_table[index].hash == reg_hash &&
-            strcmp(reg_table[index].name, reg_name) == 0) {
-            *reg = reg_table[index].code;
-            return ERR_OK;
-        }
-    }
-
-    return ERR_INVALID_REGISTER;
 }

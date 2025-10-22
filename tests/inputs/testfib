@@ -1,38 +1,38 @@
 :NEW_ITERATION           // Если пользователь ввел число > 0, то программа работает заново
 IN                       // Номер нужного члена последовательности фиббоначи
-POPR RCX
-PUSHR RCX
+POP RCX
+PUSH RCX
 PUSH 0
-JA :IF_ABOVE1    // Если номер члена <= 0, то программа прекращает работу
+JA :IF_ABOVE1            // Если номер члена <= 0, то программа прекращает работу
 HLT
 :IF_ABOVE1
 PUSH 0
-POPR RAX
+POP RAX
 PUSH 1                   // Добавление первых членов последовательности 0 и 1
-POPR RBX
+POP RBX
 CALL :FIBONACCI
-PUSHR RBX                // Вывод n-ного члена последовательности Фиббоначи
+PUSH RBX                 // Вывод n-ного члена последовательности Фиббоначи
 OUT
 JMP :NEW_ITERATION
 :FIBONACCI
-PUSHR RCX
+PUSH RCX
 PUSH 1
 JA :IF_ABOVE2
 RET                      // Если n <= 1, то происходит базовый случай
 :IF_ABOVE2               // Иначе выполняется рекурсия fib(n - 1) + fib(n - 2)
-PUSHR RAX
-PUSHR RBX
+PUSH RAX
+PUSH RBX
 ADD
-POPR RDX                 // Считает сумму RDX = RAX + RBX
-PUSHR RCX
+POP RDX                  // Считает сумму RDX = RAX + RBX
+PUSH RCX
 PUSH 1
 SUB       
-POPR RCX                 // Значение регистра RAX уменьшается на 1
+POP RCX                  // Значение регистра RAX уменьшается на 1
 CALL :SWAP
 CALL :FIBONACCI          // Рекурсивно вызывается заново
 :SWAP                    // Меняет числа в регистрах местами
-PUSHR RBX  
-POPR RAX                 // RAX = RBX
-PUSHR RDX
-POPR RBX                 // RBX = RDX(временная переменная)
+PUSH RBX  
+POP RAX                  // RAX = RBX
+PUSH RDX
+POP RBX                  // RBX = RDX(временная переменная)
 RET

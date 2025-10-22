@@ -5,16 +5,16 @@
 #include "asm_data.h"
 
 
-size_t hash_djb2(const unsigned char* line);
+size_t hashDjb2(const unsigned char* line);
 
 
-void initializeHashes();
+void initializeAndSortHashes();
 
 
-void initializeCmdHashes(CommandInfo* commands, size_t count);
+void initializeAndSortCmdHashes(CommandInfo* commands, size_t count);
 
 
-void initializeRegisterHashes(RegisterInfo* registers, size_t count);
+void initializeAndSortRegisterHashes(RegisterInfo* registers, size_t count);
 
 
 #endif // _ASM_HASH_H_

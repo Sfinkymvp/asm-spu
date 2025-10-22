@@ -1,35 +1,35 @@
 :NEW_ITERATION           // Если пользователь ввел число > 0, то программа работает заново
 IN                       // Нужное пользователю n
-POPR RAX
-PUSHR RAX
+POP RAX
+PUSH RAX
 PUSH 0
 JAE :IF_ABOVE_OR_EQUAL   // Если n < 0, то программа завершается
 HLT
 :IF_ABOVE_OR_EQUAL
 CALL :FACTORIAL
-PUSHR RAX
+PUSH RAX
 OUT                      // Вывод факториала
 JMP :NEW_ITERATION
 :FACTORIAL
-PUSHR RAX
+PUSH RAX
 PUSH 1
 JA :IF_ABOVE             // Если 0 <= n <= 1, то просходит базовый случай
 PUSH 1
-POPR RAX
+POP RAX
 RET
 :IF_ABOVE
-PUSHR RAX                // В стек пушится значение RAX
+PUSH RAX                 // В стек пушится значение RAX
 CALL :DECREMENT_RAX      // RAX уменьшается на 1
 CALL :FACTORIAL
-POPR RBX                 // Из стека достается предыдущее значение RAX и пишется в RBX
-PUSHR RAX
-PUSHR RBX
+POP RBX                  // Из стека достается предыдущее значение RAX и пишется в RBX
+PUSH RAX
+PUSH RBX
 MUL
-POPR RAX                 // Итоговый факториал
+POP RAX                  // Итоговый факториал
 RET
 :DECREMENT_RAX
-PUSHR RAX                
+PUSH RAX                
 PUSH 1 
 SUB
-POPR RAX 
+POP RAX 
 RET

@@ -10,7 +10,8 @@
 
 CommandInfo commands[] = {
     {CMD_HLT,   "HLT",   0, asmCmdNoArgs},
-    {CMD_PUSH,  "PUSH",  0, asmCmdOneArg},
+    {CMD_PUSH,  "PUSH",  0, asmCmdPush},
+    {CMD_POPR,  "POP",   0, asmCmdPop},
     {CMD_ADD,   "ADD",   0, asmCmdNoArgs},
     {CMD_SUB,   "SUB",   0, asmCmdNoArgs},
     {CMD_DIV,   "DIV",   0, asmCmdNoArgs},
@@ -27,10 +28,6 @@ CommandInfo commands[] = {
     {CMD_JNE,   "JNE",   0, asmCmdJump},
     {CMD_CALL,  "CALL",  0, asmCmdJump},
     {CMD_RET,   "RET",   0, asmCmdNoArgs},
-    {CMD_PUSHR, "PUSHR", 0, asmCmdRegs},
-    {CMD_POPR,  "POPR",  0, asmCmdRegs},
-    {CMD_PUSHM, "PUSHM", 0, asmCmdMemoryRegs},
-    {CMD_POPM,  "POPM",  0, asmCmdMemoryRegs},
     {CMD_DRAW,  "DRAW",  0, asmCmdOneArg}
 };
 

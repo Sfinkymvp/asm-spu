@@ -6,6 +6,7 @@
 #include "asm_data.h"
 #include "asm_labels.h"
 #include "asm.h"
+#include "asm_utils.h"
 #include "asm_hash.h"
 
 
@@ -50,7 +51,7 @@ ErrorCode asmCmdJump(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 
     assert(label.name != NULL);
 
-    label.hash = hash_djb2((const unsigned char*)label.name); 
+    label.hash = hashDjb2((const unsigned char*)label.name); 
     label.address = getLabelAddress(&asmdata->label_table, &label);
     asmdata->code.data[asmdata->ip++] = cmd_info->code;
 
@@ -65,38 +66,66 @@ ErrorCode asmCmdJump(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 }
 
 
-ErrorCode asmCmdRegCommon(AssemblyData* asmdata, RegisterInfo* reg_table, CommandInfo* cmd_info, char* line)
+ErrorCode asmCmdPush(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 {
     ASSERT_ASM(asmdata);
-    assert(reg_table != NULL);
     assert(cmd_info != NULL);
     assert(line != NULL);
 
-    Register reg = RESERVED;
-    CHECK_OK(getRegister(reg_table, &reg, line));
+    char* operand = NULL;
+    CHECK_OK(getWord(&operand, line, 2));
 
-    asmdata->code.data[asmdata->ip++] = cmd_info->code;
-    asmdata->code.data[asmdata->ip++] = reg;
+    ErrorCode err = processRegisterOperand(asmdata, regs, operand, CMD_PUSHR);
+    if (err == ERR_OK)
+        return ERR_OK;
 
+    err = processRegisterOperand(asmdata, memory_regs, operand, CMD_PUSHM);
+    if (err == ERR_OK)
+        return ERR_OK;
+
+    long value = 0;
+    CHECK_OK(getNumber(&value, operand));
+    asmdata->code.data[asmdata->ip++] = CMD_PUSH;
+    asmdata->code.data[asmdata->ip++] = (int)value;
     return ERR_OK;
 }
 
 
-ErrorCode asmCmdRegs(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
+ErrorCode asmCmdPop(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
 {
     ASSERT_ASM(asmdata);
     assert(cmd_info != NULL);
     assert(line != NULL);
 
-    return asmCmdRegCommon(asmdata, regs, cmd_info, line);
+    char* operand = NULL;
+    CHECK_OK(getWord(&operand, line, 2));
+
+    ErrorCode err = processRegisterOperand(asmdata, regs, operand, CMD_POPR);
+    if (err == ERR_OK)
+        return ERR_OK;
+
+    err = processRegisterOperand(asmdata, memory_regs, operand, CMD_POPM);
+    if (err == ERR_OK)
+        return ERR_OK;
+
+    return ERR_INVALID_OPERAND;
 }
 
 
-ErrorCode asmCmdMemoryRegs(AssemblyData* asmdata, CommandInfo* cmd_info, char* line)
+ErrorCode processRegisterOperand(AssemblyData* asmdata, RegisterInfo* registers,
+                                 const char* operand, Instruction instruction)
 {
     ASSERT_ASM(asmdata);
-    assert(cmd_info != NULL);
-    assert(line != NULL);
+    assert(registers != NULL);
+    assert(operand != NULL);
 
-    return asmCmdRegCommon(asmdata, memory_regs, cmd_info, line);
+    Register reg = RESERVED;
+    ErrorCode err = getRegister(registers, &reg, operand);
+    if (err == ERR_OK) {
+        asmdata->code.data[asmdata->ip++] = instruction;
+        asmdata->code.data[asmdata->ip++] = reg;
+        return ERR_OK;
+    }
+
+    return ERR_INVALID_REGISTER;
 }

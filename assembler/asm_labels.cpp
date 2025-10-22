@@ -21,7 +21,7 @@ ErrorCode defineLabel(AssemblyData* asmdata, char* line)
     if (*label.name == '\0')
         return ERR_INVALID_LABEL;
      
-    label.hash = hash_djb2((const unsigned char*)label.name); 
+    label.hash = hashDjb2((const unsigned char*)label.name); 
     label.address = asmdata->ip;
     addLabel(&asmdata->label_table.labels[asmdata->label_table.count++], &label);
 

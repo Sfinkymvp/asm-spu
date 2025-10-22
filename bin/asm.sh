@@ -18,7 +18,7 @@ FLAGS="-ggdb3 -std=c++17 -O0 \
 	-fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr"
 
 FILES="../assembler/asm_main.cpp ../assembler/asm.cpp ../assembler/asm_io.cpp ../assembler/asm_hash.cpp \
-       ../assembler/asm_labels.cpp ../assembler/asm_commands.cpp ../assembler/asm_data.cpp"
+       ../assembler/asm_utils.cpp ../assembler/asm_labels.cpp ../assembler/asm_commands.cpp ../assembler/asm_data.cpp"
 
 g++ $FILES $FLAGS -o asm
 

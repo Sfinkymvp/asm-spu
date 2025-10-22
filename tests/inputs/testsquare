@@ -1,17 +1,17 @@
 IN                  // Ввод коэффициента a
-POPR RAX
+POP RAX
 IN                  // Ввод коэффициента b
-POPR RBX
+POP RBX
 IN                  // Ввод коэффициента c
-POPR RCX
-PUSHR RAX
+POP RCX
+PUSH RAX
 PUSH 0
 JNE :QUADRATIC      // Если a != 0, то решается квадратное уравнение, иначе линейное
-PUSHR RBX
+PUSH RBX
 PUSH 0
 JNE :BNOTZERO       // Если b = 0, то проверяется истинность тождества c = 0
 PUSH 0       
-PUSHR RCX     
+PUSH RCX     
 JNE :FALSEINDENTITY // Если c = 0 -> тождество 0 = 0 верно
 PUSH 1
 OUT
@@ -22,78 +22,78 @@ OUT
 HLT
 :BNOTZERO           // Если b != 0, то решается линейное уравнение
 PUSH -1
-PUSHR RCX
+PUSH RCX
 MUL
-PUSHR RBX
+PUSH RBX
 DIV
 OUT
 PUSH 1
 OUT
 HLT
 :QUADRATIC          // Вычисление дискриминанта D = b^2 - 4ac
-PUSHR RBX         
-PUSHR RBX
+PUSH RBX         
+PUSH RBX
 MUL
 PUSH 4
-PUSHR RAX
-PUSHR RCX
+PUSH RAX
+PUSH RCX
 MUL
 MUL
 SUB
-POPR RDX 
-PUSHR RDX
+POP RDX 
+PUSH RDX
 PUSH 0
 JAE :ROOTS_EXISTS   // Если D < 0, то программа завершается
 PUSH 0
 OUT
 HLT
 :ROOTS_EXISTS       // Находится корень из неотрицательного дискриминанта
-PUSHR RDX   
+PUSH RDX   
 SQRT
-POPR RDX
+POP RDX
 PUSH -1
-PUSHR RBX
+PUSH RBX
 MUL
-PUSHR RDX
+PUSH RDX
 ADD
 PUSH 2
-PUSHR RAX
+PUSH RAX
 MUL
 DIV
-POPR REX
-PUSHR RDX
+POP REX
+PUSH RDX
 PUSH 0
 JNE :TWO_ROOTS       // Если D = 0, то ищется 1 корень, иначе 2
-PUSHR RCX
+PUSH RCX
 OUT
 PUSH 1
 OUT 
 HLT
 :TWO_ROOTS
 PUSH -1 
-PUSHR RBX
+PUSH RBX
 MUL
-PUSHR RDX
+PUSH RDX
 SUB
 PUSH 2
-PUSHR RAX
+PUSH RAX
 MUL
 DIV
-POPR RCX
-PUSHR RCX
-PUSHR REX
+POP RCX
+PUSH RCX
+PUSH REX
 JB :BELOW             // Корни печатаются в порядке возрастания и число 1 (количество корней)
-PUSHR REX
+PUSH REX
 OUT
-PUSHR RCX
+PUSH RCX
 OUT     
 PUSH 2
 OUT
 HLT
 :BELOW
-PUSHR RCX
+PUSH RCX
 OUT
-PUSHR REX
+PUSH REX
 OUT
 PUSH 2
 OUT

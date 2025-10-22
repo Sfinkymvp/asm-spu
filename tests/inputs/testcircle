@@ -1,39 +1,39 @@
 IN
-POPR RAX              // Радиус круга
+POP RAX               // Радиус круга
 PUSH 0
-POPR RBX              // Индекс в памяти
+POP RBX               // Индекс в памяти
 PUSH 40
-POPR RFX              // Колонна, в которой находится центра круга
+POP RFX               // Колонна, в которой находится центра круга
 PUSH 20
-POPR RGX              // Ряд, в котором находится центра круга
-PUSHR RAX
+POP RGX               // Ряд, в котором находится центра круга
+PUSH RAX
 PUSH 19
 JA :EXIT              // Если радиус больше допустимого, то выход
 :LOOP
-PUSHR RBX
+PUSH RBX
 PUSH 3200             // Размер памяти
 JAE :EXIT             // Если индекс в памяти больше допустимого, цикл прерывается
-PUSHR RBX
+PUSH RBX
 PUSH 80               // Длина ряда
 DIV
-POPR RCX              // Номер ряда текущей точки
-PUSHR RBX
-PUSHR RCX
+POP RCX               // Номер ряда текущей точки
+PUSH RBX
+PUSH RCX
 PUSH 80
 MUL
 SUB
-POPR RDX              // Номер колонны текущей точки
-CALL :Q_EQUATION        // Считает дистанцию от центра круга до точки (в REX)
-PUSHR REX
-PUSHR RAX
-PUSHR RAX
+POP RDX               // Номер колонны текущей точки
+CALL :Q_EQUATION      // Считает дистанцию от центра круга до точки (в REX)
+PUSH REX
+PUSH RAX
+PUSH RAX
 MUL
 PUSH 4
 MUL
 JA :DOT               // Если расстояние меньше либо равно радиусу, то переход
-PUSHR REX
-PUSHR RAX
-PUSHR RAX
+PUSH REX
+PUSH RAX
+PUSH RAX
 MUL
 JB :DOT
 CALL :LOAD_HASHTAG
@@ -44,38 +44,38 @@ CALL :LOAD_DOT        // Запись хештега
 CALL :INCREMENT_RBX
 JMP :LOOP             // Новая итерация цикла
 :Q_EQUATION 
-PUSHR RCX
-PUSHR RGX
+PUSH RCX
+PUSH RGX
 SUB
-PUSHR RCX
-PUSHR RGX
+PUSH RCX
+PUSH RGX
 SUB
 MUL
 PUSH 4
 MUL
-PUSHR RDX
-PUSHR RFX
+PUSH RDX
+PUSH RFX
 SUB
-PUSHR RDX
-PUSHR RFX
+PUSH RDX
+PUSH RFX
 SUB
 MUL
 ADD
-POPR REX
+POP REX
 RET
 :INCREMENT_RBX         // Увеличивает значение в регистре RBX на 1
-PUSHR RBX
+PUSH RBX
 PUSH 1
 ADD
-POPR RBX
+POP RBX
 RET
 :LOAD_HASHTAG
 PUSH 35
-POPM [RBX]
+POP [RBX]
 RET
 :LOAD_DOT
 PUSH 46
-POPM [RBX]
+POP [RBX]
 RET
 :EXIT
 DRAW 0                 // Вывод памяти

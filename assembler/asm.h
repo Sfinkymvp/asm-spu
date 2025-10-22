@@ -14,10 +14,4 @@ ErrorCode processInstructions(AssemblyData* asmdata);
 ErrorCode assembleInstruction(AssemblyData* asmdata, char* line);
 
 
-ErrorCode getWord(char** dest, char* line, size_t word_index);
-
-
-ErrorCode getRegister(RegisterInfo* reg_table, Register* reg, char* line);
-
-
 #endif // _ASM_H_
