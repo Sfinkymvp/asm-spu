@@ -59,14 +59,10 @@ ErrorCode assembleInstruction(AssemblyData* asmdata, char* line)
     }
 
     size_t instruction_hash = hashDjb2((const unsigned char*)instruction);
-    ErrorCode err = ERR_OK;
-    for (size_t index = 0; index < COMMAND_COUNT && err == ERR_OK; index++) {
-        if (commands[index].hash == instruction_hash &&
-            strcmp(commands[index].name, instruction) == 0) {
-            err = commands[index].handler(asmdata, &commands[index], line);
-            break;
-        }
-    }
+    ssize_t index = binarySearch(&instruction_hash, commands, COMMAND_COUNT, 
+                                 sizeof(CommandInfo), compareCmdHashesBin);
+    if (index >= 0 && strcmp(commands[index].name, instruction) == 0)
+        return commands[index].handler(asmdata, &commands[index], line);
 
-    return err;
+    return ERR_INVALID_INSTRUCTION;
 }

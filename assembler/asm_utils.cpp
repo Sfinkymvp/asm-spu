@@ -47,12 +47,11 @@ ErrorCode getRegister(RegisterInfo* reg_table, Register* reg, const char* reg_na
     assert(reg_name != NULL);
 
     size_t reg_hash = hashDjb2((const unsigned char*)reg_name);
-    for (size_t index = 0; index < REGISTER_COUNT; index++) {
-        if (reg_table[index].hash == reg_hash &&
-            strcmp(reg_table[index].name, reg_name) == 0) {
-            *reg = reg_table[index].code;
-            return ERR_OK;
-        }
+    ssize_t index = binarySearch(&reg_hash, reg_table, REGISTER_COUNT,
+                                 sizeof(RegisterInfo), compareRegisterHashesBin);
+    if (index >= 0 && strcmp(reg_table[index].name, reg_name) == 0) {
+        *reg = reg_table[index].code;
+        return ERR_OK;
     }
 
     return ERR_INVALID_REGISTER;
